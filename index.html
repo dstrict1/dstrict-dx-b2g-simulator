@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>2026 B2G 전략 예산 시뮬레이터</title>
+<style>
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+:root{
+  --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic','맑은 고딕',Arial,sans-serif;
+  --bg:#f6f5f0;
+  --card:#fff;
+  --border:#e8e6df;
+  --text:#1a1a18;
+  --muted:#73726c;
+  --hint:#a3a29c;
+  --blue:#185FA5;   --blue-bg:#E6F1FB;
+  --red:#A32D2D;    --red-bg:#FCEBEB;
+  --green:#3B6D11;  --green-bg:#EAF3DE;
+  --purple:#534AB7; --purple-bg:#EEEDFE;
+  --teal:#0F6E56;   --teal-bg:#E1F5EE;
+  --coral:#993C1D;  --coral-bg:#FAECE7;
+  --amber:#854F0B;  --amber-bg:#FAEEDA;
+  --radius:10px;
+  /* KPI 컬러 */
+  --kpi-green:#00B050;
+  --kpi-yellow:#CC9900;
+  --kpi-red:#FF0000;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);font-weight:300;font-size:14px;line-height:1.5;color:var(--text);background:var(--bg)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+input,select,button,textarea{font-family:var(--font)}
+button{cursor:pointer}
+
+/* LOGIN/RO CSS 제거 */
+#ro-banner{
+  display:none;background:#1a1a18;color:#fff;
+  padding:9px 20px;font-size:12px;font-weight:500;
+  flex-shrink:0;align-items:center;gap:10px;letter-spacing:0.2px;
+}
+#ro-banner.show{display:flex}
+#ro-banner .ro-badge{
+  background:var(--amber-bg);color:var(--amber);
+  padding:3px 9px;border-radius:5px;font-weight:700;font-size:11px;letter-spacing:0.3px;
+}
+
+/* ═══════════════════ APP SHELL ═══════════════════ */
+#app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* TOPBAR */
+#topbar{
+  background:var(--text);color:#fff;
+  padding:0 20px;height:48px;
+  display:flex;align-items:center;gap:10px;
+  flex-shrink:0;
+}
+.tb-logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.tb-logo-mark{
+  display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:7px;background:var(--purple);
+}
+.tb-name{font-size:14px;font-weight:700;letter-spacing:-0.3px}
+.tb-tag{
+  font-size:10px;padding:2px 8px;border-radius:20px;
+  background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);
+  border:1px solid rgba(255,255,255,.18);letter-spacing:0.3px;
+}
+.tb-sep{flex:1}
+.tb-user{font-size:11px;color:rgba(255,255,255,.55);letter-spacing:0.2px}
+.tb-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:7px;
+  border:1px solid rgba(255,255,255,.2);
+  background:transparent;color:rgba(255,255,255,.8);
+  font-size:11px;font-weight:500;cursor:pointer;letter-spacing:0.2px;
+  transition:background .12s,border-color .12s;
+}
+.tb-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.35)}
+.tb-btn.purple{background:var(--purple);border-color:var(--purple);color:#fff}
+.tb-btn.purple:hover{background:#4239a0}
+.tb-btn.green{background:rgba(59,109,17,.3);border-color:rgba(59,109,17,.5);color:#86efac}
+.tb-btn.green:hover{background:rgba(59,109,17,.45)}
+
+/* VAT BANNER */
+#vat-banner{
+  background:var(--amber-bg);border-bottom:1px solid #f0d9a0;
+  padding:6px 20px;display:flex;align-items:center;gap:7px;
+  flex-shrink:0;font-size:11px;color:var(--amber);font-weight:500;letter-spacing:0.2px;
+}
+
+/* ACTION BAR */
+#action-bar{
+  background:var(--card);border-bottom:1px solid var(--border);
+  padding:7px 20px;display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+#action-bar .sep{flex:1}
+
+/* CONFIRM BUTTON */
+#btn-confirm{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 16px;border-radius:8px;border:none;
+  font-size:12px;font-weight:700;cursor:pointer;
+  transition:all .18s;letter-spacing:0.2px;
+}
+#btn-confirm.idle{background:var(--border);color:var(--muted)}
+#btn-confirm.dirty{
+  background:var(--amber);color:#fff;
+  box-shadow:0 0 0 3px rgba(133,79,11,.2);
+  animation:pulse-amber .9s infinite;
+}
+#btn-confirm.confirmed{background:var(--kpi-green);color:#fff}
+@keyframes pulse-amber{0%,100%{box-shadow:0 0 0 3px rgba(133,79,11,.2)}50%{box-shadow:0 0 0 6px rgba(133,79,11,.06)}}
+
+/* ACTION BUTTONS */
+.act-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 13px;border-radius:8px;
+  border:1px solid var(--border);background:var(--card);
+  color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;
+  transition:background .12s,border-color .12s;letter-spacing:0.2px;
+}
+.act-btn:hover{background:var(--bg);border-color:var(--hint)}
+.act-btn.green{border-color:#86efac;color:var(--green);background:var(--green-bg)}
+.act-btn.green:hover{background:#dcfce7}
+.act-btn.blue{border-color:#bfdbfe;color:var(--blue);background:var(--blue-bg)}
+.act-btn.blue:hover{background:#dbeafe}
+.act-btn.purple{border-color:#c4b5fd;color:var(--purple);background:var(--purple-bg)}
+.act-btn.purple:hover{background:#ede9fe}
+.act-btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* DIFF PANEL */
+#diff-panel{display:none;background:var(--amber-bg);border-bottom:1px solid #f0d9a0;padding:8px 20px;flex-shrink:0;font-size:11px}
+#diff-panel.show{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.diff-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:6px;border:1px solid transparent;font-size:11px;font-weight:600;white-space:nowrap;letter-spacing:0.2px}
+.diff-up{background:var(--green-bg);color:var(--green);border-color:#c0dd97}
+.diff-down{background:var(--red-bg);color:var(--red);border-color:#f5b7b7}
+.diff-neutral{background:var(--bg);color:var(--muted);border-color:var(--border)}
+
+/* MAIN LAYOUT */
+#main{display:flex;flex:1;overflow:hidden}
+#left{
+  width:40%;background:var(--bg);border-right:1px solid var(--border);
+  overflow-y:auto;padding:14px;box-sizing:border-box;
+}
+#right{
+  width:60%;background:var(--card);
+  overflow-y:auto;padding:16px 18px;box-sizing:border-box;
+}
+
+/* CARDS */
+.sc{
+  background:var(--card);border-radius:var(--radius);
+  border:1px solid var(--border);margin-bottom:10px;overflow:hidden;
+}
+.sc-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;border-bottom:1px solid var(--border);background:#faf9f7;
+}
+.sc-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.sc-body{padding:13px 14px}
+
+/* FORMS */
+.lbl{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;letter-spacing:0.3px}
+.inp{
+  width:100%;padding:8px 11px;font-size:13px;font-weight:400;
+  border:1px solid var(--border);border-radius:8px;
+  background:var(--card);color:var(--text);outline:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+.inp:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83,74,183,.1)}
+.money-wrap{position:relative}
+.money-wrap .inp{padding-right:26px;font-weight:600}
+.money-unit{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--hint);pointer-events:none}
+.hint-txt{font-size:11px;color:var(--hint);margin-top:4px;letter-spacing:0.2px}
+
+/* DUAL SLIDER */
+.dual-box{margin-bottom:12px}
+.dual-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.dual-lbl{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.3px}
+.dual-hint{font-size:11px;color:var(--hint);margin-left:5px}
+.dual-num{
+  width:72px;text-align:right;font-size:13px;font-weight:700;
+  padding:4px 8px;border-radius:6px;outline:none;
+  border:1.5px solid rgba(83,74,183,.3);background:rgba(83,74,183,.07);color:var(--purple);
+}
+.dual-unit{font-size:11px;color:var(--muted);margin-left:3px}
+input[type=range]{width:100%;accent-color:var(--purple);margin:3px 0;cursor:pointer;height:4px}
+.range-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--hint);margin-top:2px;letter-spacing:0.3px}
+
+/* GRADE CARDS */
+.grade-cards-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;padding:10px 14px}
+.grade-card{border-radius:8px;padding:8px 9px;background:var(--bg);border:1px solid var(--border);border-left-width:3px}
+.grade-card .gname{font-size:11px;font-weight:700;margin-bottom:2px;letter-spacing:0.3px}
+.grade-card .gmm{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-0.3px}
+.grade-card .gdaily{font-size:10px;color:var(--hint);margin-top:1px;letter-spacing:0.2px}
+
+/* PARAM ACCORDION */
+.param-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-bottom:1px solid var(--border);
+  background:#faf9f7;cursor:pointer;user-select:none;
+}
+.param-head:hover{background:var(--purple-bg)}
+
+/* LABOR */
+.labor-grid{display:grid;grid-template-columns:80px 1fr 40px 52px 62px 22px;gap:4px;align-items:center}
+.labor-row-wrap{border-radius:8px;border:1px solid var(--border);overflow:hidden;margin-bottom:5px}
+.labor-row{padding:7px 9px;background:var(--card)}
+.labor-foot{padding:3px 9px 5px;background:var(--bg);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.labor-detail{background:var(--blue-bg);border-top:1px solid #b5d4f4;padding:10px 12px;font-size:11px}
+.labor-detail table{width:100%;border-collapse:collapse}
+.labor-detail td{padding:3px 3px;vertical-align:middle}
+.grade-sel{
+  font-size:11px;border:1px solid var(--border);border-radius:5px;
+  padding:3px;background:var(--card);width:100%;font-weight:600;
+  color:var(--text);outline:none;
+}
+.num-inp{
+  text-align:center;font-size:11px;border:1px solid var(--border);
+  border-radius:5px;padding:3px 2px;width:100%;outline:none;background:var(--card);
+}
+.num-inp:focus{border-color:var(--purple)}
+.lsub{font-size:13px;font-weight:700;color:var(--muted);text-align:right;white-space:nowrap;letter-spacing:-0.3px}
+.det-btn{
+  font-size:10px;color:var(--blue);background:none;
+  border:1px solid #b5d4f4;border-radius:5px;
+  padding:2px 7px;font-weight:600;cursor:pointer;letter-spacing:0.2px;
+}
+.icon-btn{background:none;border:none;color:var(--hint);padding:2px;line-height:1;font-size:14px;cursor:pointer}
+.icon-btn:hover{color:var(--red)}
+
+/* OUTS */
+.outs-row{border-radius:8px;border:1px solid var(--border);background:var(--card);padding:9px 11px;margin-bottom:7px}
+.vat-btn{
+  font-size:11px;padding:5px 10px;border-radius:7px;
+  border:1px solid var(--border);background:var(--bg);color:var(--muted);
+  font-weight:600;cursor:pointer;white-space:nowrap;letter-spacing:0.2px;transition:all .15s;
+}
+.vat-btn.on{background:var(--coral-bg);color:var(--coral);border-color:#e8b49a}
+
+/* BUTTONS */
+.pre-btn{
+  padding:5px 12px;font-size:12px;font-weight:500;letter-spacing:0.2px;
+  border:1px solid var(--border);border-radius:5px;
+  background:var(--card);color:var(--muted);cursor:pointer;transition:all .15s;
+}
+.pre-btn:hover,.pre-btn.on{background:var(--text);color:#fff;border-color:var(--text)}
+.btn-cta{
+  padding:6px 14px;font-size:12px;font-weight:600;letter-spacing:0.2px;
+  border:1px solid var(--purple);border-radius:7px;
+  background:var(--purple);color:#fff;cursor:pointer;transition:all .15s;
+}
+.btn-cta:hover{background:#4239a0}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
+.kpi{
+  border-radius:var(--radius);border:1px solid var(--border);
+  padding:11px 13px;background:var(--bg);min-width:0;overflow:hidden;
+}
+.kpi-label{font-size:11px;color:var(--muted);margin-bottom:4px;letter-spacing:0.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-value{font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-0.5px}
+.kpi-sub{font-size:10px;color:var(--hint);margin-top:2px;letter-spacing:0.2px}
+
+/* TABS */
+.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:14px;overflow-x:auto}
+.tab{
+  padding:10px 18px;font-size:13px;font-weight:500;color:var(--muted);
+  border:none;background:none;border-bottom:2px solid transparent;
+  margin-bottom:-2px;cursor:pointer;transition:all .15s;
+  white-space:nowrap;letter-spacing:0.2px;
+}
+.tab.on{color:var(--text);border-bottom-color:var(--text)}
+
+/* SCENARIO TABLE */
+table.sc-tbl{width:100%;border-collapse:collapse}
+table.sc-tbl th{
+  text-align:left;padding:9px 10px;
+  font-size:12px;color:var(--muted);font-weight:600;letter-spacing:0.3px;
+  border-bottom:2px solid var(--border);
+  position:sticky;top:0;background:var(--card);z-index:1;
+}
+table.sc-tbl th:not(:first-child){text-align:center}
+table.sc-tbl td{padding:7px 10px;font-size:13px;border-bottom:1px solid var(--border);text-align:center}
+table.sc-tbl td:first-child{text-align:left;color:var(--muted)}
+table.sc-tbl tr.sep-row td{border-top:2px solid var(--border)}
+table.sc-tbl tr:hover td{background:#fafaf7}
+.n{text-align:right}
+
+/* PNL */
+.pnl-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px}
+.pnl-row.sep{border-top:1px solid var(--border);margin-top:3px;padding-top:6px}
+.pnl-indent{padding-left:16px}
+
+/* BADGE */
+.bd{
+  display:inline-block;padding:2px 8px;border-radius:4px;
+  font-size:11px;font-weight:600;letter-spacing:0.3px;
+}
+
+/* MODALS */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.modal-box{
+  background:var(--card);border-radius:14px;
+  box-shadow:0 8px 40px rgba(0,0,0,.15);
+  width:100%;max-width:520px;max-height:82vh;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:15px 18px;border-bottom:1px solid var(--border);
+}
+.modal-title{font-size:14px;font-weight:700;color:var(--text);letter-spacing:-0.3px}
+.modal-close{
+  background:none;border:none;font-size:18px;
+  color:var(--hint);cursor:pointer;line-height:1;padding:2px 6px;border-radius:5px;
+}
+.modal-close:hover{background:var(--bg);color:var(--text)}
+.modal-body{padding:16px 18px;overflow-y:auto;flex:1}
+.modal-foot{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+
+/* EXPORT OPTIONS */
+.export-opt{
+  display:flex;align-items:center;gap:13px;padding:11px 14px;
+  border-radius:9px;border:1px solid var(--border);margin-bottom:8px;
+  cursor:pointer;transition:border-color .12s,background .12s;
+}
+.export-opt:hover{border-color:var(--purple);background:var(--purple-bg)}
+.export-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.export-name{font-size:12px;font-weight:700;color:var(--text);letter-spacing:0.2px}
+.export-desc{font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:0.2px}
+
+/* SHARE */
+.share-opt{
+  border:1.5px solid var(--border);border-radius:10px;padding:14px 13px;
+  cursor:pointer;text-align:center;transition:border-color .15s,background .15s;
+  background:var(--bg);
+}
+.share-opt:hover{border-color:var(--purple);background:var(--purple-bg)}
+.share-opt.on{border-color:var(--purple);background:var(--purple-bg)}
+.share-tab{transition:color .15s}
+.share-tab:hover{color:var(--text)!important}
+.share-url-box{display:flex;gap:7px;align-items:center;margin-bottom:14px}
+.share-url-inp{
+  flex:1;padding:9px 11px;font-size:11px;font-family:monospace;
+  border:1px solid var(--border);border-radius:7px;outline:none;color:var(--muted);
+}
+.share-url-inp:focus{border-color:var(--purple)}
+.copy-btn{
+  padding:8px 14px;font-size:11px;font-weight:600;letter-spacing:0.2px;
+  border-radius:7px;border:1px solid #c4b5fd;background:var(--purple-bg);
+  color:var(--purple);cursor:pointer;white-space:nowrap;transition:all .15s;
+}
+.copy-btn:hover{background:#ede9fe}
+.copy-btn.copied{background:var(--green-bg);color:var(--green);border-color:#c0dd97}
+.share-note{
+  font-size:11px;color:var(--muted);line-height:1.6;padding:9px 13px;
+  background:var(--bg);border-radius:7px;border:1px solid var(--border);letter-spacing:0.2px;
+}
+
+/* SNAPSHOT */
+.snap-item{
+  display:flex;align-items:center;gap:9px;padding:9px 11px;
+  border-radius:9px;border:1px solid var(--border);margin-bottom:6px;background:var(--card);
+}
+.snap-item:hover{border-color:var(--purple)}
+.snap-info{flex:1;min-width:0}
+.snap-name{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.2px}
+.snap-meta{font-size:10px;color:var(--hint);margin-top:2px;letter-spacing:0.2px}
+.snap-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0;letter-spacing:0.2px}
+.snap-act{display:flex;gap:4px;flex-shrink:0}
+.snap-act button{
+  font-size:10px;padding:3px 9px;border-radius:5px;
+  border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;letter-spacing:0.2px;
+}
+.snap-act button:hover{background:var(--card)}
+
+/* AUDIT */
+#audit-pre{
+  background:#1a1a18;padding:15px 17px;font-size:12px;color:#86efac;
+  font-family:'Pretendard',monospace;line-height:1.9;white-space:pre-wrap;
+  border-radius:0 0 var(--radius) var(--radius);margin:0;letter-spacing:0.2px;
+}
+
+/* PROGRESS BAR */
+.eb{height:4px;border-radius:2px;background:var(--border)}
+.ebf{height:100%;border-radius:2px;transition:width .3s}
+
+
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  #main{flex-direction:column}
+  #left{width:100%;max-height:50vh;border-right:none;border-bottom:1px solid var(--border)}
+  #right{width:100%}
+  .kpi-grid{grid-template-columns:repeat(3,1fr)}
+  .grade-cards-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .grade-cards-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+
+<!-- ════ MAIN APP ════ -->
+<div id="app">
+  <!-- Topbar -->
+  <div id="topbar">
+    <div class="tb-logo">
+      <div class="tb-logo-mark">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      </div>
+      <span class="tb-name">B2G Simulator</span>
+    </div>
+    <span class="tb-tag">2026 노임단가 · 2025 개정</span>
+    <div class="tb-sep"></div>
+    <span style="font-size:11px;color:var(--hint);letter-spacing:0.3px">d'strict B2G Simulator</span>
+  </div>
+
+  <!-- VAT Banner -->
+  <div id="vat-banner">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    모든 수익 분석은 부가세를 제외한 공급가액 기준으로 산출됩니다.
+  </div>
+
+  <!-- Action Bar -->
+  <div id="action-bar">
+    <button id="btn-confirm" class="idle">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <span id="btn-confirm-txt">변경 적용</span>
+    </button>
+    <span id="confirm-time" style="font-size:10px;color:var(--hint);letter-spacing:0.2px"></span>
+    <div class="sep"></div>
+    <button class="act-btn" id="btn-snapshot">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      스냅샷
+    </button>
+    <button class="act-btn green" id="btn-export">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      데이터 추출
+    </button>
+    <button class="act-btn blue always-active" id="btn-share">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      링크 공유
+    </button>
+  </div>
+
+  <!-- Diff Panel -->
+  <div id="diff-panel"></div>
+
+  <!-- Main -->
+  <div id="main">
+    <div id="left"></div>
+    <div id="right"></div>
+  </div>
+
+  <!-- ── Export Modal ── -->
+  <div id="modal-export" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <div class="modal-head">
+        <span class="modal-title">데이터 추출</span>
+        <button class="modal-close" data-close="modal-export">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="export-opt" id="exp-csv">
+          <div class="export-icon" style="background:var(--green-bg)">📊</div>
+          <div><div class="export-name">CSV 파일 (.csv)</div><div class="export-desc">엑셀 호환. 손익계산서, 시나리오 비교, 인건비 내역 포함.</div></div>
+        </div>
+        <div class="export-opt" id="exp-json">
+          <div class="export-icon" style="background:var(--blue-bg)">📋</div>
+          <div><div class="export-name">JSON 파일 (.json)</div><div class="export-desc">전체 입력값 + 계산 결과 구조화. 시스템 연동용.</div></div>
+        </div>
+        <div class="export-opt" id="exp-txt">
+          <div class="export-icon" style="background:var(--amber-bg)">📄</div>
+          <div><div class="export-name">보고서 텍스트 (.txt)</div><div class="export-desc">Audit 내역 + 전체 요약 텍스트 형식.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Share Modal ── -->
+  <div id="modal-share" class="modal-overlay" style="display:none">
+    <div class="modal-box" style="max-width:500px">
+      <div class="modal-head">
+        <span class="modal-title">🔗 링크로 공유</span>
+        <button class="modal-close" data-close="modal-share">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- STEP 1: API 키 입력 -->
+        <div id="share-step1">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.7;letter-spacing:0.2px">
+            현재 입력된 설정을 클라우드에 저장하고 공유 링크를 생성합니다.<br>
+            받는 사람은 링크만 클릭하면 바로 열람할 수 있습니다.
+          </p>
+          <!-- 권한 -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+            <div class="share-opt on" id="sopt-ro" onclick="selectShareOpt('ro')">
+              <div style="font-size:22px;margin-bottom:6px">👁</div>
+              <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:0.2px">열람 전용</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:0.2px;line-height:1.5">수치 확인만 가능<br>수정 불가</div>
+            </div>
+            <div class="share-opt" id="sopt-edit" onclick="selectShareOpt('edit')">
+              <div style="font-size:22px;margin-bottom:6px">✏️</div>
+              <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:0.2px">편집 가능</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:0.2px;line-height:1.5">수치 수정 가능<br>로그인 불필요</div>
+            </div>
+          </div>
+          <button id="btn-create-link" class="btn-cta" onclick="createShareLink()" style="width:100%;padding:12px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <span id="btn-create-txt">공유 링크 생성</span>
+          </button>
+          <div id="share-err" style="display:none;margin-top:10px;padding:9px 12px;background:var(--red-bg);border-radius:7px;font-size:11px;color:var(--red);letter-spacing:0.2px;line-height:1.6"></div>
+          <!-- 숨겨진 API 키 입력 (고급 사용자 전용) -->
+          <input id="inp-apikey" type="hidden" value="">
+          <input type="hidden" id="chk-save-key">
+        </div>
+
+        <!-- STEP 2: 완료 -->
+        <div id="share-step2" style="display:none">
+          <div style="text-align:center;padding:8px 0 16px">
+            <div style="font-size:36px;margin-bottom:10px">✅</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text);letter-spacing:-0.3px;margin-bottom:4px">공유 링크 생성 완료</div>
+            <div id="share-mode-note" style="font-size:11px;color:var(--muted);letter-spacing:0.2px"></div>
+          </div>
+          <div style="display:flex;gap:7px;margin-bottom:12px">
+            <input id="share-result-url" class="share-url-inp" type="text" readonly style="flex:1;font-size:11px;font-family:monospace;background:var(--bg)">
+            <button id="btn-copy-final" class="copy-btn" onclick="copyFinalURL()">복사</button>
+          </div>
+          <div style="padding:11px 14px;background:var(--green-bg);border:1px solid #c0dd97;border-radius:9px;font-size:11px;color:var(--muted);line-height:1.75;letter-spacing:0.2px">
+            💡 링크를 <strong style="color:var(--text)">카카오톡·이메일·슬랙</strong> 어디서든 붙여넣어 공유하세요.<br>
+            받는 사람이 링크를 열면 현재 설정이 그대로 복원됩니다.<br>
+            🌐 인터넷만 되면 어디서든 접속 가능합니다.
+          </div>
+          <button onclick="resetShareModal()" style="margin-top:10px;width:100%;padding:8px;font-size:12px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--muted);cursor:pointer;letter-spacing:0.2px;font-family:var(--font)">
+            ↩ 다른 링크 만들기
+          </button>
+        </div>
+
+      </div>
+      <div class="modal-foot">
+        <button class="pre-btn" data-close="modal-share">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Snapshot Modal ── -->
+  <div id="modal-snapshot" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <div class="modal-head">
+        <span class="modal-title">스냅샷 관리</span>
+        <button class="modal-close" data-close="modal-snapshot">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <input id="snap-name-inp" type="text" class="inp" placeholder="스냅샷 이름 (예: 1차 견적 85% 시나리오)" style="flex:1">
+          <button class="btn-cta" id="btn-snap-save">저장</button>
+        </div>
+        <div id="snap-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONSTANTS — d'strict B2G
+============================================================ */
+const USERS=[
+  {id:'admin',pw:'1234',name:'관리자',role:'admin'},
+  {id:'user', pw:'pass',name:'일반 사용자',role:'user'},
+];
+const GD={S:{label:'특급',daily:568663},A:{label:'고급',daily:427566},B:{label:'중급',daily:336666},C:{label:'초급',daily:302999}};
+const ROLES=[
+  {id:'plan',  label:'기획',   color:'#534AB7'},
+  {id:'design',label:'디자인', color:'#993C1D'},
+  {id:'pm',    label:'PM',     color:'#0F6E56'},
+  {id:'system',label:'시스템', color:'#854F0B'},
+  {id:'dev',   label:'개발',   color:'#185FA5'},
+];
+const GCOLS={S:'#A32D2D',A:'#854F0B',B:'#185FA5',C:'#3B6D11'};
+const OCATS=[{id:'contents',label:'콘텐츠',color:'#534AB7'},{id:'hardware',label:'하드웨어',color:'#185FA5'},{id:'interior',label:'인테리어',color:'#0F6E56'},{id:'construct',label:'건축/시공',color:'#993C1D'},{id:'direct',label:'직접경비',color:'#0F6E56'}];
+const SC_DEF=[{key:'worst',label:'Worst',color:'#A32D2D'},{key:'avg',label:'Average',color:'#854F0B'},{key:'best',label:'Best',color:'#3B6D11'}];
+const DAILY_DEF={S:568663,A:427566,B:336666,C:302999};
+const PNL_DEFS=[
+  {label:'낙찰금액 (VAT포함)',key:'ct',indent:false,bold:false},
+  {label:'공급가액 (매출)',key:'rv',indent:false,bold:true},
+  {label:'(-) 인건비',key:'lc',indent:true,neg:true},
+  {label:'(-) 외주비 공급가액',key:'os',indent:true,neg:true},
+  {label:'(-) 서버/기타',key:'svc',indent:true,neg:true},
+  {label:'공헌이익',key:'cn',indent:false,bold:true,sep:true},
+  {label:'(-) 간접비',key:'ic',indent:true,neg:true},
+  {label:'영업이익',key:'op',indent:false,bold:true,sep:true,accent:true},
+  {label:'영업이익률',key:'mg',indent:false,bold:true,sep:true,pct:true},
+];
+
+/* 인증 없음 — 공개 접근 */
+let CURRENT_USER={id:'public',name:'',role:'admin'};
+let IS_READONLY=false;
+
+function getDefaultState(){
+  return{
+    base:550000000,bid:87.99,oh:145,tr:20,wd:21.0,
+    gd:{S:568663,A:427566,B:336666,C:302999},
+    labor:[
+      {id:1,grade:'A',role:'dev', count:3,mm:6.0},
+      {id:2,grade:'S',role:'pm',  count:1,mm:6.0},
+      {id:3,grade:'B',role:'plan',count:2,mm:4.0}
+    ],
+    outs:[],svc:0,indr:10,
+    sc:{worst:85,avg:90,best:95},
+    memo:'',
+  };
+}
+
+function enterApp(){
+  document.getElementById('app').classList.add('active');
+  if(!sessionStorage.getItem('b2g5_s')){
+    const d=getDefaultState();
+    Object.keys(d).forEach(k=>{S[k]=JSON.parse(JSON.stringify(d[k]));});
+    saveAll();
+    sessionStorage.setItem('b2g5_s','1');
+  }
+  const cb=document.getElementById('confirm-bar');
+  if(cb)cb.style.display='block';
+  buildLeft();buildRight();bindActionBar();
+  autoSetScenarios();
+  BASELINE=null;
+  document.getElementById('confirm-time').textContent='';
+}
+
+function enterReadOnly(){}
+function switchToLogin(){}
+function doLogin(){}
+function doLogout(){}
+
+/* ============================================================
+   STATE
+============================================================ */
+const S={
+  base: lsGet('b2g4_base',550000000),
+  bid:  lsGet('b2g4_bid', 87.99),
+  oh:   lsGet('b2g4_oh',  145),
+  tr:   lsGet('b2g4_tr',  20),
+  wd:   lsGet('b2g4_wd',  21.0),
+  gd:   lsGet('b2g4_gd',  {S:568663,A:427566,B:336666,C:302999}),
+  labor:lsGet('b2g4_labor',[{id:1,grade:'A',role:'dev',count:3,mm:6.0},{id:2,grade:'S',role:'pm',count:1,mm:6.0},{id:3,grade:'B',role:'plan',count:2,mm:4.0}]),
+  outs: lsGet('b2g4_outs', []),
+  svc:  lsGet('b2g4_svc',  10000000),
+  indr: lsGet('b2g4_indr', 10),
+  sc:   lsGet('b2g4_sc',   {worst:85,avg:90,best:95}),
+};
+const UI={pOpen:false,tab:'dashboard',detId:null,_uid:400};
+function uid(){return ++UI._uid;}
+function saveKey(k){lsSet('b2g4_'+k,S[k]);}
+function saveAll(){['base','bid','oh','tr','wd','gd','labor','outs','svc','indr','sc'].forEach(saveKey);}
+
+/* ============================================================
+   HELPERS
+============================================================ */
+const fl=n=>Math.floor(n);
+const r2=n=>Math.round(n*100)/100;
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+
+function fmtW(n){
+  if(n==null||isNaN(n))return'—';
+  const a=Math.abs(n),s=n<0?'-':'';
+  if(a>=1e8)return s+(a/1e8).toFixed(1)+'억원';
+  if(a>=1e7)return s+(a/1e7).toFixed(1)+'천만원';
+  if(a>=1e6)return s+fl(a/10000)/100+'백만원';
+  return s+fl(a).toLocaleString('ko-KR')+'원';
+}
+function fmtF(n){if(n==null||isNaN(n))return'—';return(n<0?'-':'')+Math.abs(fl(n)).toLocaleString('ko-KR')+'원';}
+function fmtComma(n){const v=fl(Math.abs(n)||0);return v===0?'':v.toLocaleString('ko-KR');}
+function parseComma(s){return parseInt(String(s).replace(/[^\d]/g,''),10)||0;}
+
+function mcol(v){return v>=10?'var(--kpi-green)':v>=0?'var(--kpi-yellow)':'var(--kpi-red)';}
+function mbg(v){return v>=10?'var(--green-bg)':v>=0?'var(--amber-bg)':'var(--red-bg)';}
+function mbdr(v){return v>=10?'#c0dd97':v>=0?'#f0d9a0':'#f5b7b7';}
+
+/* ============================================================
+   CALC ENGINE
+============================================================ */
+function calcMM(k){
+  const d=Math.round(S.gd[k]*S.wd),o=Math.round(d*(S.oh/100)),t=Math.round((d+o)*(S.tr/100));
+  return{direct:d,overhead:o,tech:t,mm:d+o+t};
+}
+function getMMs(){const c={};['S','A','B','C'].forEach(k=>c[k]=calcMM(k));return c;}
+function compute(rate){
+  const ct=fl(S.base*(rate/100)),rv=fl(ct/1.1);
+  const mms=getMMs();
+  let lc=0;S.labor.forEach(r=>lc+=fl(mms[r.grade].mm*r.count*r.mm));
+  let os=0,svcTotal=0;
+  S.outs.forEach(r=>{
+    const v=parseFloat(r.amount)||0;
+    const sup=r.vatIncl?fl(v/1.1):v;
+    if(r.catId==='direct') svcTotal+=sup;
+    else os+=sup;
+  });
+  const svc=svcTotal+(S.svc||0);
+  const dt=lc+os+svc,cn=rv-dt,ic=fl(rv*(S.indr/100)),op=cn-ic,mg=rv>0?(op/rv)*100:0;
+  return{ct,rv,lc,os,svc,dt,cn,ic,op,mg};
+}
+
+/* ── 시나리오 자동 투찰율 계산 ──────────────────────────────────
+   Best  : 영업이익률 > 30% 가 처음 달성되는 투찰율 (70→100 탐색)
+   Worst : 영업이익률 ≤ 15% 로 처음 내려가는 투찰율 (100→70 탐색)
+   찾지 못하면 null 반환 → 기존값 유지
+─────────────────────────────────────────────────────────────── */
+function autoSetScenarios(){
+  let bestRate=null, worstRate=null;
+
+  // Best: 70→100, 이익률 > 30% 인 최저 투찰율
+  for(let r=70; r<=100.001; r+=0.01){
+    const rr=Math.round(r*100)/100;
+    if(compute(rr).mg>30){bestRate=rr;break;}
+  }
+
+  // Worst: 100→70, 이익률 ≤ 15% 인 최고 투찰율 (즉, 이 이하에서 불리)
+  for(let r=100; r>=70; r-=0.01){
+    const rr=Math.round(r*100)/100;
+    if(compute(rr).mg<=15){worstRate=rr;break;}
+  }
+
+  if(bestRate!==null)  S.sc.best =bestRate;
+  if(worstRate!==null) S.sc.worst=worstRate;
+  // Average = (Worst + Best) / 2 자동 계산
+  S.sc.avg=Math.round((S.sc.worst+S.sc.best)*50)/100;
+  saveKey('sc');
+
+  // Sync slider + number inputs (worst / avg / best 모두)
+  ['worst','avg','best'].forEach(k=>{
+    const rng=document.getElementById('sc_'+k+'_rng');
+    const num=document.getElementById('sc_'+k+'_num');
+    if(rng) rng.value=S.sc[k];
+    if(num) num.value=S.sc[k].toFixed(2);
+  });
+  return{bestRate, worstRate};
+}
+
+/* ============================================================
+   DEBOUNCE
+============================================================ */
+function debounce(fn,ms){let t;return function(...a){clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
+
+/* ============================================================
+   CONFIRM / DIFF
+============================================================ */
+let BASELINE=null;
+let IS_DIRTY=false;
+
+function snapshotResult(){
+  const r=compute(S.bid);
+  return{base:S.base,bid:S.bid,oh:S.oh,tr:S.tr,indr:S.indr,svc:S.svc,
+    ct:r.ct,rv:r.rv,lc:r.lc,os:r.os,dt:r.dt,cn:r.cn,ic:r.ic,op:r.op,mg:r.mg,
+    ts:new Date().toLocaleString('ko-KR',{hour12:false})};
+}
+function markDirty(){
+  
+  if(!BASELINE)return;  // 초기 대기 상태
+  IS_DIRTY=true;
+  const btn=document.getElementById('btn-confirm');
+  const txt=document.getElementById('btn-confirm-txt');
+  if(btn){btn.className='dirty';if(txt)txt.textContent='변경 적용 ●';}
+}
+function doConfirm(){
+  
+
+  // 1) 시나리오 투찰율 자동 계산
+  autoSetScenarios();
+
+  // 2) 스냅샷 & diff
+  const prev=BASELINE;
+  BASELINE=snapshotResult();IS_DIRTY=false;
+  const btn=document.getElementById('btn-confirm');
+  const txt=document.getElementById('btn-confirm-txt');
+  const timeEl=document.getElementById('confirm-time');
+  if(btn){btn.className='confirmed';if(txt)txt.textContent='적용 완료';}
+  if(timeEl)timeEl.textContent=BASELINE.ts+' 기준';
+  showDiff(prev,BASELINE);
+  setTimeout(()=>{if(btn&&!IS_DIRTY){btn.className='idle';if(txt)txt.textContent='변경 적용';}},2200);
+
+  // 3) 오버레이 제거 + 우측 전체 갱신
+  removePendingOverlay();
+  // 대기화면→결과화면 전환 (BASELINE이 설정됐으므로 buildRight가 결과 표시)
+  const wasWaiting=!!document.getElementById('right-waiting');
+  if(wasWaiting){
+    buildRight();
+  } else {
+    updateKPIs();updatePnL();updateScenarioTable();
+    renderRightFull();
+  }
+}
+function showDiff(prev,cur){
+  const el=document.getElementById('diff-panel');if(!el)return;
+  if(!prev){el.className='';el.innerHTML='';return;}
+  const fields=[
+    {label:'기초금액',pv:prev.base,cv:cur.base,fmt:fmtW},
+    {label:'투찰율',pv:prev.bid,cv:cur.bid,fmt:v=>v.toFixed(2)+'%'},
+    {label:'공급가액',pv:prev.rv,cv:cur.rv,fmt:fmtW},
+    {label:'인건비',pv:prev.lc,cv:cur.lc,fmt:fmtW,costField:true},
+    {label:'영업이익',pv:prev.op,cv:cur.op,fmt:fmtW},
+    {label:'이익률',pv:prev.mg,cv:cur.mg,fmt:v=>v.toFixed(2)+'%'},
+  ];
+  const changed=fields.filter(f=>Math.abs(f.pv-f.cv)>0.005);
+  if(!changed.length){el.className='show';el.innerHTML='<span style="font-size:11px;color:var(--muted)">변경된 항목이 없습니다.</span>';return;}
+  el.className='show';
+  el.innerHTML='<span style="font-size:11px;font-weight:700;color:var(--amber);margin-right:6px">전/후 비교:</span>'
+    +changed.map(f=>{
+      const delta=f.cv-f.pv,isUp=delta>0;
+      const isGood=f.costField?!isUp:isUp;
+      const cls=isGood?'diff-up':'diff-down';
+      const arrow=isUp?'↑':'↓';
+      const dStr=f.label==='투찰율'||f.label==='이익률'?(isUp?'+':'')+delta.toFixed(2)+'%':(isUp?'+':'')+fmtW(Math.abs(delta));
+      return `<span class="diff-badge ${cls}"><span style="font-size:10px;font-weight:400;margin-right:2px">${f.label}</span>${f.fmt(f.pv)} ${arrow} <strong>${f.fmt(f.cv)}</strong> <span style="font-size:9px;opacity:.7">(${dStr})</span></span>`;
+    }).join('');
+}
+
+/* ============================================================
+   CHANGE HANDLERS
+============================================================ */
+function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function setHTML(id,v){const e=document.getElementById(id);if(e)e.innerHTML=v;}
+
+/* ============================================================
+   PENDING STATE
+   - 좌측 입력 변경 → 우측 오버레이 표시 (대기)
+   - "변경 적용" 클릭 → 오버레이 제거 + 우측 전체 갱신
+============================================================ */
+let PENDING=false; // 미적용 변경 있음
+
+function showPendingOverlay(){
+  if(!BASELINE) return;  // 아직 한번도 확정 안 한 상태면 대기화면 유지
+  if(PENDING) return;
+  PENDING=true;
+  // 우측 패널 위에 반투명 "변경 적용" 안내 오버레이
+  const right=document.getElementById('right');
+  if(!right) return;
+  if(right.querySelector('#pending-overlay')) return;
+  const ov=document.createElement('div');
+  ov.id='pending-overlay';
+  ov.style.cssText=`
+    position:sticky;top:0;left:0;right:0;
+    background:rgba(246,245,240,0.82);
+    backdrop-filter:blur(4px);
+    border-bottom:2px solid var(--amber);
+    padding:11px 18px;
+    display:flex;align-items:center;justify-content:space-between;
+    z-index:10;margin-bottom:12px;border-radius:0 0 10px 10px;
+    font-size:12px;color:var(--amber);font-weight:600;letter-spacing:0.2px;
+  `;
+  ov.innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      입력값이 변경되었습니다. <strong style="color:var(--text)">변경 적용</strong> 버튼을 눌러 결과를 확인하세요.
+    </div>
+    <button onclick="doConfirm()" style="
+      padding:6px 16px;font-size:12px;font-weight:700;
+      background:var(--amber);color:#fff;border:none;border-radius:7px;cursor:pointer;
+      letter-spacing:0.2px;font-family:var(--font);
+    ">변경 적용</button>
+  `;
+  right.insertBefore(ov, right.firstChild);
+}
+
+function removePendingOverlay(){
+  PENDING=false;
+  const ov=document.getElementById('pending-overlay');
+  if(ov) ov.remove();
+}
+
+const debouncedRenderRight=debounce(function(){
+  // no-op — right panel only updates on doConfirm
+},200);
+
+function onBidChange(v){
+  S.bid=r2(clamp(v,70,100));saveKey('bid');
+  // bid는 즉시 KPI 반영 (투찰율 자체가 입력이므로)
+  updateKPIs();updatePnL();updateScenarioTable();
+  showPendingOverlay();markDirty();
+}
+function onScenarioChange(){showPendingOverlay();markDirty();}
+function onCostChange(){
+  showPendingOverlay();markDirty();
+  autoSetScenarios();
+}
+function onParamChange(){updateGradeCards();onCostChange();}
+
+/* ============================================================
+   MONEY INPUT
+============================================================ */
+function makeMoneyInputHTML({id,value,label,hint}){
+  return `<div style="margin-bottom:13px">
+    ${label?`<label class="lbl" for="${id}">${label}</label>`:''}
+    <div class="money-wrap"><input id="${id}" type="text" inputmode="numeric" pattern="[0-9,]*"
+      class="inp" value="${fmtComma(value)}" autocomplete="off" spellcheck="false">
+      <span class="money-unit">원</span></div>
+    ${hint?`<div id="${id}_hint" class="hint-txt">${hint}</div>`:''}
+  </div>`;
+}
+function bindMoneyInput(id,getVal,setVal,onCalc){
+  const inp=document.getElementById(id);if(!inp)return;
+  inp.addEventListener('keypress',e=>{if(!/[\d]/.test(e.key)&&!e.ctrlKey&&!e.metaKey&&!['Backspace','Delete','ArrowLeft','ArrowRight','Tab','Enter'].includes(e.key))e.preventDefault();});
+  inp.addEventListener('input',e=>{const raw=e.target.value.replace(/[^\d]/g,'');const n=parseInt(raw,10)||0;e.target.value=raw;setVal(n);onCalc();});
+  inp.addEventListener('blur',e=>{const n=parseComma(e.target.value)||getVal();e.target.value=fmtComma(n);setVal(n);onCalc();});
+  inp.addEventListener('focus',e=>{const n=parseComma(e.target.value)||getVal();e.target.value=n===0?'':String(n);e.target.select();});
+}
+
+/* ============================================================
+   DUAL SLIDER
+============================================================ */
+function makeDualHTML({id,label,value,min,max,step,dec,unit='%',hint,color='var(--purple)'}){
+  return `<div class="dual-box" data-dual="${id}">
+    <div class="dual-row">
+      <div><span class="dual-lbl">${label}</span>${hint?`<span class="dual-hint">${hint}</span>`:''}</div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input id="${id}_num" type="text" inputmode="decimal" value="${value.toFixed(dec)}"
+          class="dual-num" style="border-color:${color}33;background:${color}11;color:${color}" autocomplete="off">
+        <span class="dual-unit">${unit}</span>
+      </div>
+    </div>
+    <input id="${id}_rng" type="range" min="${min}" max="${max}" step="${step}" value="${value}" style="accent-color:${color}">
+    <div class="range-labels"><span>${min}${unit}</span><span>${max}${unit}</span></div>
+  </div>`;
+}
+function bindDualSlider({id,min,max,step,dec,onCommit,color='var(--purple)'}){
+  const numEl=document.getElementById(id+'_num');
+  const rngEl=document.getElementById(id+'_rng');
+  if(!numEl||!rngEl)return;
+  rngEl.addEventListener('input',e=>{const v=parseFloat(e.target.value);numEl.value=v.toFixed(dec);onCommit(v);});
+  let tt=null;
+  numEl.addEventListener('input',e=>{const raw=e.target.value;if(raw.endsWith('.'))return;const v=parseFloat(raw);if(isNaN(v))return;const cv=clamp(v,min,max);rngEl.value=cv;clearTimeout(tt);tt=setTimeout(()=>onCommit(cv),80);});
+  numEl.addEventListener('blur',e=>{clearTimeout(tt);let v=parseFloat(e.target.value);if(isNaN(v))v=parseFloat(rngEl.value);v=clamp(v,min,max);const rv=dec===0?Math.round(v):parseFloat(v.toFixed(dec));numEl.value=rv.toFixed(dec);rngEl.value=rv;onCommit(rv);});
+  numEl.addEventListener('focus',e=>e.target.select());
+  numEl.addEventListener('keypress',e=>{if(!/[\d.]/.test(e.key)&&!e.ctrlKey&&!e.metaKey)e.preventDefault();if(e.key==='.'&&e.target.value.includes('.'))e.preventDefault();});
+}
+
+/* ============================================================
+   LEFT PANEL
+============================================================ */
+function buildLeft(){
+  const el=document.getElementById('left');
+  const mms=getMMs();
+  const res=compute(S.bid);
+  el.innerHTML=`
+    <div class="sc">
+      <div class="sc-head"><span class="sc-title">발주 정보</span></div>
+      <div class="sc-body">
+        ${makeMoneyInputHTML({id:'inp_base',value:S.base,label:'기초금액 (VAT 포함)',hint:`낙찰금액 → ${fmtW(fl(S.base*S.bid/100))}`})}
+        ${makeDualHTML({id:'bid',label:'현재 투찰율',value:S.bid,min:70,max:100,step:0.01,dec:2,hint:'소수점 2자리',color:'#185FA5'})}
+      </div>
+    </div>
+
+    <div class="sc" id="param_card">
+      <div class="param-head" id="param_head">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          <span class="sc-title" style="margin:0">노임단가 & 요율 설정</span>
+          <span class="bd" style="background:var(--purple-bg);color:var(--purple)">2025 개정</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="param_summary" style="font-size:11px;color:var(--hint);letter-spacing:0.2px">제경비 ${S.oh}% · 기술료 ${S.tr}%</span>
+          <span id="param_arrow" style="font-size:12px;color:var(--hint)">▼</span>
+        </div>
+      </div>
+      <div class="grade-cards-grid" id="grade_cards">${buildGradeCardsHTML(mms)}</div>
+      <div id="param_body" style="display:none">
+        <div style="padding:0 14px 14px;border-top:1px solid var(--border);padding-top:12px;display:flex;flex-direction:column;gap:0">
+          ${makeDualHTML({id:'oh',label:'제경비율',value:S.oh,min:144,max:154,step:1,dec:0,hint:'144~154%',color:'#534AB7'})}
+          ${makeDualHTML({id:'tr',label:'기술료율',value:S.tr,min:20,max:40,step:1,dec:0,hint:'20~40%',color:'#534AB7'})}
+          <div style="margin-bottom:12px">
+            <label class="lbl">월 근무일수</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input id="inp_wd" type="number" min="15" max="25" step="0.5" value="${S.wd}" class="inp" style="width:70px;padding:7px 10px">
+              <span style="font-size:12px;color:var(--muted)">일</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span class="lbl" style="margin:0">일 노임단가 (원/일)</span>
+            <button class="pre-btn" id="btn_reset_all">전체 초기화</button>
+          </div>
+          ${['S','A','B','C'].map(k=>`
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+              <span style="width:26px;font-size:12px;font-weight:700;color:${GCOLS[k]};flex-shrink:0;letter-spacing:0.2px">${GD[k].label}</span>
+              <input id="inp_gd_${k}" type="number" step="1" min="100000" value="${S.gd[k]}" class="inp" style="flex:1;padding:6px 10px;text-align:right">
+              <span style="font-size:11px;color:var(--hint);width:32px;flex-shrink:0">원/일</span>
+              <button class="pre-btn" data-rst="${k}">↺</button>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="sc">
+      <div class="sc-head">
+        <span class="sc-title">투입 인력</span>
+        <div style="display:flex;align-items:center;gap:9px">
+          <span id="lbl_labor" style="font-size:13px;color:var(--red);font-weight:700;letter-spacing:-0.3px">${fmtW(res.lc)}</span>
+          <button class="btn-cta" id="btn_add_labor" style="padding:4px 11px;font-size:11px">+ 추가</button>
+        </div>
+      </div>
+      <div class="sc-body">
+        <div class="labor-grid" style="padding:3px 3px 6px;border-bottom:1px solid var(--border);margin-bottom:4px">
+          <span style="font-size:11px;color:var(--muted);letter-spacing:0.2px">직무</span>
+          <span style="font-size:11px;color:var(--muted);letter-spacing:0.2px">등급</span>
+          <span style="font-size:11px;color:var(--muted);text-align:center;letter-spacing:0.2px">인원</span>
+          <span style="font-size:11px;color:var(--muted);text-align:center;letter-spacing:0.2px">MM</span>
+          <span style="font-size:11px;color:var(--muted);text-align:right;letter-spacing:0.2px">소계</span>
+          <span></span>
+        </div>
+        <div id="labor_list">${buildLaborHTML()}</div>
+      </div>
+    </div>
+
+    <div class="sc">
+      <div class="sc-head">
+        <span class="sc-title">외주비 / 직접경비</span>
+        <div style="display:flex;align-items:center;gap:9px">
+          <span id="lbl_outs" style="font-size:13px;color:var(--purple);font-weight:700;letter-spacing:-0.3px">공급가액 ${fmtW(res.os)}</span>
+          <button class="btn-cta" id="btn_add_outs" style="padding:4px 11px;font-size:11px;background:var(--purple);border-color:var(--purple)">+ 추가</button>
+        </div>
+      </div>
+      <div class="sc-body"><div id="outs_list">${buildOutsHTML()}</div></div>
+    </div>
+
+    <div class="sc">
+      <div class="sc-head"><span class="sc-title">간접비율</span></div>
+      <div class="sc-body">${makeDualHTML({id:'indr',label:'사업 간접비율',value:S.indr,min:0,max:30,step:1,dec:0,hint:'순매출액 대비',color:'#0F6E56'})}</div>
+    </div>
+
+    <div class="sc">
+      <div class="sc-head">
+        <span class="sc-title">시나리오 투찰율</span>
+        <span style="font-size:10px;color:var(--hint);letter-spacing:0.2px">Best &gt;30% · Worst ≤15% 자동 계산</span>
+      </div>
+      <div class="sc-body">${SC_DEF.map(s=>{
+        const autoNote=s.key==='best'?'이익률 >30% 자동':s.key==='worst'?'이익률 ≤15% 자동':'(Worst+Best)÷2 자동';
+        return makeDualHTML({id:'sc_'+s.key,label:s.label,value:S.sc[s.key],min:70,max:100,step:0.01,dec:2,color:s.color,hint:autoNote});
+      }).join('')}</div>
+    </div>
+    <div style="text-align:center;font-size:10px;color:var(--hint);padding-bottom:8px;letter-spacing:0.2px">
+      ${'💾 입력값 자동 저장'}
+    </div>
+  `;
+  bindLeftEvents();
+}
+
+function buildGradeCardsHTML(mms){
+  if(!mms)mms=getMMs();
+  return['S','A','B','C'].map(k=>`
+    <div class="grade-card" style="border-left-color:${GCOLS[k]}">
+      <div class="gname" style="color:${GCOLS[k]}">${GD[k].label}</div>
+      <div class="gmm">${fmtW(mms[k].mm)}</div>
+      <div class="gdaily">${S.gd[k].toLocaleString()}원/일</div>
+    </div>`).join('');
+}
+function updateGradeCards(){
+  setHTML('grade_cards',buildGradeCardsHTML());
+  setText('param_summary',`제경비 ${S.oh}% · 기술료 ${S.tr}%`);
+}
+
+function buildLaborHTML(){
+  if(!S.labor.length)return'<p style="text-align:center;font-size:12px;color:var(--hint);padding:12px 0;letter-spacing:0.2px">인력을 추가하세요</p>';
+  const mms=getMMs();
+  return S.labor.map(row=>{
+    const g=mms[row.grade],sub=fl(g.mm*row.count*row.mm),isD=UI.detId===row.id;
+    const robj=ROLES.find(r=>r.id===(row.role||'dev'))||ROLES[4];
+    return`<div class="labor-row-wrap" data-labor-wrap="${row.id}">
+      <div class="labor-row labor-grid">
+        <select class="grade-sel" data-lf="role" data-lid="${row.id}" style="color:${robj.color};font-size:11px">
+          ${ROLES.map(r=>`<option value="${r.id}"${r.id===(row.role||'dev')?' selected':''}>${r.label}</option>`).join('')}
+        </select>
+        <select class="grade-sel" data-lf="grade" data-lid="${row.id}" style="color:${GCOLS[row.grade]}">
+          ${['S','A','B','C'].map(k=>`<option value="${k}"${k===row.grade?' selected':''}>${GD[k].label}</option>`).join('')}
+        </select>
+        <input class="num-inp" type="number" min="1" max="99" value="${row.count}" data-lf="count" data-lid="${row.id}">
+        <input class="num-inp" type="number" min="0.1" max="99" step="0.1" value="${row.mm}" data-lf="mm" data-lid="${row.id}">
+        <span class="lsub">${fmtW(sub)}</span>
+        <button class="icon-btn" data-del-labor="${row.id}" title="삭제">✕</button>
+      </div>
+      <div class="labor-foot">
+        <span style="font-size:11px;color:var(--hint);letter-spacing:0.2px">M/M ${g.mm.toLocaleString()}원</span>
+        <button class="det-btn" data-det="${row.id}">${isD?'▲ 닫기':'▼ 상세보기'}</button>
+      </div>
+      ${isD?`<div class="labor-detail">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:${robj.color}22;color:${robj.color}">${robj.label}</span>
+          <span style="font-weight:700;color:var(--blue);font-size:12px;letter-spacing:0.2px">${GD[row.grade].label} M/M 단가 산출</span>
+        </div>
+        <table>
+          <tr><td style="color:var(--muted);width:90px">① 직접인건비</td><td style="color:var(--hint);font-size:10px">${S.gd[row.grade].toLocaleString()}원 × ${S.wd}일</td><td style="text-align:right;font-weight:600">${g.direct.toLocaleString()}원</td></tr>
+          <tr><td style="color:var(--muted)">② 제경비</td><td style="color:var(--hint);font-size:10px">① × ${S.oh}%</td><td style="text-align:right;font-weight:600">${g.overhead.toLocaleString()}원</td></tr>
+          <tr><td style="color:var(--muted)">③ 기술료</td><td style="color:var(--hint);font-size:10px">(①+②) × ${S.tr}%</td><td style="text-align:right;font-weight:600">${g.tech.toLocaleString()}원</td></tr>
+          <tr style="border-top:1px solid #b5d4f4"><td style="color:var(--blue);font-weight:700;padding-top:4px">M/M 단가</td><td style="color:var(--hint);font-size:10px;padding-top:4px">①+②+③</td><td style="text-align:right;font-weight:700;color:var(--blue);padding-top:4px">${g.mm.toLocaleString()}원</td></tr>
+        </table>
+        <div style="margin-top:6px;padding-top:6px;border-top:1px solid #b5d4f4;display:flex;justify-content:space-between;color:var(--muted);font-size:12px">
+          <span>${row.count}명 × ${row.mm}MM</span><strong>${fmtF(sub)}</strong>
+        </div>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function buildOutsHTML(){
+  if(!S.outs.length)return'<p style="text-align:center;font-size:12px;color:var(--hint);padding:10px 0;letter-spacing:0.2px">외주비 항목을 추가하세요</p>';
+  return S.outs.map(row=>{
+    const v=parseFloat(row.amount)||0,sup=row.vatIncl?fl(v/1.1):v;
+    return`<div class="outs-row" data-outs-row="${row.id}">
+      <div style="display:flex;gap:5px;margin-bottom:7px;align-items:center">
+        <select class="grade-sel" style="width:auto" data-of="catId" data-oid="${row.id}">
+          ${OCATS.map(c=>`<option value="${c.id}"${c.id===row.catId?' selected':''}>${c.label}</option>`).join('')}
+        </select>
+        <input type="text" placeholder="항목명" value="${row.name||''}" data-of="name" data-oid="${row.id}" class="inp" style="flex:1;padding:6px 10px;font-size:12px" autocomplete="off">
+        <button class="icon-btn" data-del-out="${row.id}" title="삭제">✕</button>
+      </div>
+      <div style="display:flex;gap:7px;align-items:center">
+        <div class="money-wrap" style="flex:1">
+          <input type="text" inputmode="numeric" class="inp" style="padding-right:22px;font-size:13px;font-weight:600"
+            value="${fmtComma(row.amount)}" data-of="amount" data-oid="${row.id}" autocomplete="off">
+          <span class="money-unit">원</span>
+        </div>
+        <button class="vat-btn${row.vatIncl?' on':''}" data-vat="${row.id}">${row.vatIncl?'✓ VAT포함':'VAT별도'}</button>
+      </div>
+      ${v>0?`<div style="margin-top:5px;font-size:11px;color:var(--hint);letter-spacing:0.2px">→ 공급가액: <strong style="color:var(--muted)">${fmtF(sup)}</strong></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function bindLeftEvents(){
+  bindMoneyInput('inp_base',()=>S.base,v=>S.base=v,()=>{saveKey('base');setText('inp_base_hint',`낙찰금액 → ${fmtW(fl(S.base*S.bid/100))}`);onCostChange();});
+  bindDualSlider({id:'bid',min:70,max:100,step:0.01,dec:2,onCommit:v=>onBidChange(v),color:'#185FA5'});
+  bindDualSlider({id:'oh',min:144,max:154,step:1,dec:0,onCommit:v=>{S.oh=Math.round(v);saveKey('oh');onParamChange();},color:'#534AB7'});
+  bindDualSlider({id:'tr',min:20,max:40,step:1,dec:0,onCommit:v=>{S.tr=Math.round(v);saveKey('tr');onParamChange();},color:'#534AB7'});
+  bindDualSlider({id:'indr',min:0,max:30,step:1,dec:0,onCommit:v=>{S.indr=Math.round(v);saveKey('indr');onCostChange();},color:'#0F6E56'});
+  SC_DEF.forEach(s=>bindDualSlider({id:'sc_'+s.key,min:70,max:100,step:0.01,dec:2,onCommit:v=>{S.sc[s.key]=r2(v);saveKey('sc');onScenarioChange();},color:s.color}));
+  const wdEl=document.getElementById('inp_wd');if(wdEl)wdEl.addEventListener('change',e=>{S.wd=parseFloat(e.target.value)||21;saveKey('wd');onParamChange();});
+
+  ['S','A','B','C'].forEach(k=>{const el=document.getElementById('inp_gd_'+k);if(el)el.addEventListener('change',e=>{S.gd[k]=parseInt(e.target.value)||DAILY_DEF[k];saveKey('gd');onParamChange();});});
+
+  const leftEl=document.getElementById('left');
+  leftEl.addEventListener('click',e=>{
+    if(e.target.closest('#param_head')){UI.pOpen=!UI.pOpen;document.getElementById('param_body').style.display=UI.pOpen?'block':'none';document.getElementById('param_arrow').textContent=UI.pOpen?'▲':'▼';return;}
+    if(e.target.id==='btn_reset_all'){S.gd={...DAILY_DEF};['S','A','B','C'].forEach(k=>{const el=document.getElementById('inp_gd_'+k);if(el)el.value=DAILY_DEF[k];});saveKey('gd');onParamChange();return;}
+    const rst=e.target.dataset.rst;if(rst){S.gd[rst]=DAILY_DEF[rst];const el=document.getElementById('inp_gd_'+rst);if(el)el.value=DAILY_DEF[rst];saveKey('gd');onParamChange();return;}
+    if(e.target.id==='btn_add_labor'){{S.labor.push({id:uid(),grade:'B',role:'dev',count:1,mm:3.0});saveKey('labor');refreshLaborList();onCostChange();}return;}
+    const dl=e.target.dataset.delLabor;if(dl){{S.labor=S.labor.filter(r=>r.id!=dl);if(UI.detId==dl)UI.detId=null;saveKey('labor');refreshLaborList();onCostChange();}return;}
+    const det=e.target.dataset.det;if(det){UI.detId=UI.detId==det?null:parseInt(det);refreshLaborList();return;}
+    if(e.target.id==='btn_add_outs'){{S.outs.push({id:uid(),catId:'contents',name:'',amount:0,vatIncl:false});saveKey('outs');refreshOutsList();onCostChange();}return;}
+    const dlo=e.target.dataset.delOut;if(dlo){{S.outs=S.outs.filter(r=>r.id!=dlo);saveKey('outs');refreshOutsList();onCostChange();}return;}
+    const vat=e.target.dataset.vat;if(vat){if(!IS_READONLY){const row=S.outs.find(r=>r.id==vat);if(row){row.vatIncl=!row.vatIncl;saveKey('outs');refreshOutsList();onCostChange();}}return;}
+  });
+  leftEl.addEventListener('change',e=>{
+    const lid=e.target.dataset.lid,lf=e.target.dataset.lf;
+    if(lid&&lf){const row=S.labor.find(r=>r.id==lid);if(!row)return;if(lf==='role')row.role=e.target.value;else if(lf==='grade')row.grade=e.target.value;else if(lf==='count')row.count=Math.max(1,parseInt(e.target.value)||1);else if(lf==='mm')row.mm=Math.max(0.1,parseFloat(e.target.value)||0.1);saveKey('labor');refreshLaborList();onCostChange();return;}
+    const oid=e.target.dataset.oid,of_=e.target.dataset.of;
+    if(oid&&of_&&of_!=='name'&&of_!=='amount'){const row=S.outs.find(r=>r.id==oid);if(!row)return;row[of_]=e.target.value;saveKey('outs');refreshOutsList();onCostChange();}
+  });
+  leftEl.addEventListener('input',e=>{
+    if(e.target.dataset.of==='name'){const row=S.outs.find(r=>r.id==e.target.dataset.oid);if(row){row.name=e.target.value;saveKey('outs');}}
+  });
+  leftEl.addEventListener('focus',e=>{if(e.target.dataset.of==='amount'){const n=parseComma(e.target.value);e.target.value=n===0?'':String(n);e.target.select();}},true);
+  leftEl.addEventListener('input',e=>{
+    if(e.target.dataset.of==='amount'){const row=S.outs.find(r=>r.id==e.target.dataset.oid);if(!row)return;row.amount=parseInt(e.target.value.replace(/[^\d]/g,''),10)||0;saveKey('outs');const wrap=e.target.closest('[data-outs-row]');if(wrap){const v=row.amount,sup=row.vatIncl?fl(v/1.1):v;let sd=wrap.querySelector('.sup-display');if(!sd){sd=document.createElement('div');sd.className='sup-display';sd.style.cssText='margin-top:5px;font-size:11px;color:var(--hint);letter-spacing:0.2px';wrap.appendChild(sd);}sd.innerHTML=v>0?`→ 공급가액: <strong style="color:var(--muted)">${fmtF(sup)}</strong>`:'';}onCostChange();}
+  });
+  leftEl.addEventListener('blur',e=>{if(e.target.dataset.of==='amount'){const row=S.outs.find(r=>r.id==e.target.dataset.oid);if(row)e.target.value=fmtComma(row.amount);}},true);
+}
+
+function refreshLaborList(){setHTML('labor_list',buildLaborHTML());setText('lbl_labor',fmtW(compute(S.bid).lc));}
+function refreshOutsList(){setHTML('outs_list',buildOutsHTML());setText('lbl_outs','공급가액 '+fmtW(compute(S.bid).os));}
+
+/* ============================================================
+   RIGHT PANEL
+============================================================ */
+function buildRight(){
+  const el=document.getElementById('right');
+
+  // ── 확정 전: 대기 화면 ──
+  if(!BASELINE){
+    el.innerHTML=`
+      <div id="right-waiting" style="
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        height:calc(100vh - 200px);gap:18px;padding:40px 20px;text-align:center;
+      ">
+        <div style="
+          width:72px;height:72px;border-radius:50%;
+          background:var(--amber-bg);border:2px solid #f0d9a0;
+          display:flex;align-items:center;justify-content:center;font-size:32px;
+        ">⏳</div>
+        <div>
+          <div style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:8px">
+            입력 대기 중
+          </div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.8;letter-spacing:0.2px">
+            좌측에서 모든 입력값을 설정한 후<br>
+            상단의 <strong style="color:var(--amber)">변경 적용</strong> 버튼을 누르면<br>
+            결과가 이곳에 표시됩니다.
+          </div>
+        </div>
+        <button onclick="doConfirm()" style="
+          padding:12px 28px;font-size:13px;font-weight:700;
+          background:var(--purple);color:#fff;border:none;border-radius:9px;
+          cursor:pointer;letter-spacing:0.2px;font-family:var(--font);
+          box-shadow:0 2px 8px rgba(83,74,183,.3);
+        ">
+          ✓ 지금 바로 결과 보기
+        </button>
+        <div style="font-size:11px;color:var(--hint);letter-spacing:0.2px">
+          2026 KOSA 노임단가 기준 · d'strict B2G Simulator
+        </div>
+      </div>`;
+    return;
+  }
+
+  // ── 확정 후: 결과 화면 ──
+  const res=compute(S.bid),scr={worst:compute(S.sc.worst),avg:compute(S.sc.avg),best:compute(S.sc.best),cur:res};
+  el.innerHTML=`
+    <div class="kpi-grid" id="kpi_grid">${buildKPIHTML(res)}</div>
+    <div class="tabs" id="tabs_row">
+      <button class="tab${UI.tab==='dashboard'?' on':''}" data-tab="dashboard">대시보드</button>
+      <button class="tab${UI.tab==='scenarios'?' on':''}" data-tab="scenarios">시나리오 비교</button>
+      <button class="tab${UI.tab==='audit'?' on':''}" data-tab="audit">계산 근거</button>
+    </div>
+    <div id="tab_content">${buildTabHTML(res,scr)}</div>
+    <div style="margin-top:14px;padding:10px 0;border-top:1px solid var(--border);text-align:center;font-size:11px;color:var(--hint);line-height:1.7;letter-spacing:0.2px">
+      참고: 한국소프트웨어산업협회 발행 <strong style="color:var(--muted)">SW사업 대가산정 가이드(2025 개정판)</strong><br>
+      2026년 노임단가 기준 · 원 단위 미만 절삭(Floor) · d'strict B2G Simulator
+    </div>
+  `;
+  el.addEventListener('click',e=>{
+    const tab=e.target.dataset.tab;
+    if(tab){
+      UI.tab=tab;
+      document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+      const r2=compute(S.bid);
+      setHTML('tab_content',buildTabHTML(r2,{worst:compute(S.sc.worst),avg:compute(S.sc.avg),best:compute(S.sc.best),cur:r2}));
+    }
+  });
+}
+
+function buildKPIHTML(res){
+  return`
+    <div class="kpi"><div class="kpi-label">낙찰금액(VAT포함)</div><div class="kpi-value">${fmtW(res.ct)}</div><div class="kpi-sub">투찰율 ${S.bid.toFixed(2)}%</div></div>
+    <div class="kpi" style="background:var(--blue-bg);border-color:#b5d4f4"><div class="kpi-label">공급가액(매출)</div><div class="kpi-value" style="color:var(--blue)">${fmtW(res.rv)}</div><div class="kpi-sub">VAT 제외</div></div>
+    <div class="kpi" style="background:var(--red-bg);border-color:#f5b7b7"><div class="kpi-label">총 변동비</div><div class="kpi-value" style="color:var(--red)">${fmtW(res.dt)}</div></div>
+    <div class="kpi" style="background:${mbg(res.mg)};border-color:${mbdr(res.mg)}"><div class="kpi-label">영업이익</div><div class="kpi-value" style="color:${mcol(res.mg)}">${fmtW(res.op)}</div></div>
+    <div class="kpi" style="background:${mbg(res.mg)};border-color:${mbdr(res.mg)}">
+      <div class="kpi-label">영업이익률</div>
+      <div class="kpi-value" style="font-size:20px;font-weight:700;color:${mcol(res.mg)};letter-spacing:-0.5px">${res.mg.toFixed(2)}%</div>
+      <div class="kpi-sub" style="color:${mcol(res.mg)}">${res.mg>=10?'✓ 목표 달성':res.mg>=0?'△ 마진 주의':'✕ 적자'}</div>
+    </div>`;
+}
+function updateKPIs(){setHTML('kpi_grid',buildKPIHTML(compute(S.bid)));}
+
+function buildPnLHTML(res){
+  return PNL_DEFS.map(row=>{
+    let v=row.key==='mg'?res.mg:row.neg?-res[row.key]:res[row.key];
+    const col=row.pct?mcol(res.mg):row.accent?(res.op>=0?'var(--kpi-green)':'var(--kpi-red)'):(v<0?'var(--red)':'var(--text)');
+    return`<div class="pnl-row ${row.sep?'sep':''} ${row.indent?'pnl-indent':''}">
+      <span style="font-weight:${row.bold?600:300};color:${row.bold?'var(--text)':'var(--muted)'};font-size:${row.bold?'14px':'12px'};letter-spacing:${row.bold?'-0.3px':'0.2px'}">${row.label}${row.key==='ic'?` (${S.indr}%)`:''}:</span>
+      <span style="font-weight:600;color:${col};font-size:${row.bold?'14px':'12px'};letter-spacing:-0.3px">${row.pct?res.mg.toFixed(2)+'%':fmtF(v)}</span>
+    </div>`;
+  }).join('');
+}
+function updatePnL(){const el=document.getElementById('pnl_body');if(el)el.innerHTML=buildPnLHTML(compute(S.bid));}
+
+function buildScBodyHTML(scr){
+  const skys=[{k:'worst'},{k:'avg'},{k:'best'},{k:'cur'}];
+  const rows=[{label:'낙찰금액',key:'ct'},{label:'공급가액',key:'rv'},{label:'인건비',key:'lc'},{label:'외주비',key:'os'},{label:'공헌이익',key:'cn',bold:true,sep:true},{label:'간접비',key:'ic'},{label:'영업이익',key:'op',bold:true,sep:true,acc:true},{label:'이익률',key:'mg',bold:true,sep:true,pct:true}];
+  return rows.map((row,ri)=>`<tr class="${row.sep?'sep-row':''}" style="background:${ri%2===0?'#fff':'var(--bg)'}">
+    <td style="font-weight:${row.bold?600:300};color:${row.bold?'var(--text)':'var(--muted)'};letter-spacing:0.2px">${row.label}</td>
+    ${skys.map(s=>{const r=scr[s.k],v=r[row.key];const col=row.pct?mcol(v):row.acc?v>=0?'var(--kpi-green)':'var(--kpi-red)':'var(--text)';const bg=row.pct?mbg(v):s.k==='cur'?'var(--blue-bg)':'';return`<td style="font-weight:${row.bold?600:300};color:${col};background:${bg};${s.k==='cur'?'border-left:2px solid #b5d4f4':''}">${row.pct?v.toFixed(2)+'%':fmtW(v)}</td>`}).join('')}
+  </tr>`).join('');
+}
+function updateScenarioTable(){
+  const scr={worst:compute(S.sc.worst),avg:compute(S.sc.avg),best:compute(S.sc.best),cur:compute(S.bid)};
+  const el=document.getElementById('sc_body');if(el)el.innerHTML=buildScBodyHTML(scr);
+  ['worst','avg','best'].forEach(k=>{const h=document.getElementById('sc_hdr_'+k);if(h)h.textContent=S.sc[k].toFixed(2)+'%';});
+  const hc=document.getElementById('sc_hdr_cur');if(hc)hc.textContent=S.bid.toFixed(2)+'%';
+}
+
+function buildTabHTML(res,scr){
+  if(UI.tab==='dashboard')return buildDashboardHTML(res);
+  if(UI.tab==='scenarios')return buildScenariosHTML(scr);
+  return buildAuditHTML(res);
+}
+
+function buildDashboardHTML(res){
+  const totalCost=res.rv;
+  const costSegs=[{name:'인건비',v:fl(res.lc),c:'#185FA5'},{name:'외주비',v:fl(res.os),c:'#534AB7'},{name:'서버/기타',v:fl(res.svc),c:'#854F0B'},{name:'간접비',v:fl(res.ic),c:'#73726c'},{name:'영업이익',v:Math.max(0,fl(res.op)),c:'#3B6D11'}].filter(d=>d.v>0);
+  const catData=OCATS.map(cat=>{const t=S.outs.filter(r=>r.catId===cat.id).reduce((s,r)=>{const v=parseFloat(r.amount)||0;return s+(r.vatIncl?fl(v/1.1):v);},0);return{name:cat.label,v:t,color:cat.color};}).filter(d=>d.v>0);
+  const linePts=[];for(let r=70;r<=100;r+=0.5)linePts.push({x:r,y:+compute(r).mg.toFixed(2)});
+  const markPts=[...SC_DEF.map(s=>({x:S.sc[s.key],color:s.color,r:5})),{x:S.bid,color:'#185FA5',r:7}];
+
+  return`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div class="sc" style="margin:0">
+        <div class="sc-head"><span class="sc-title">매출 대비 비용 구조</span></div>
+        <div class="sc-body">
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px">
+            ${costSegs.map(d=>`<span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);letter-spacing:0.2px"><span style="width:8px;height:8px;border-radius:2px;background:${d.c};display:inline-block;flex-shrink:0"></span>${d.name} ${totalCost>0?((d.v/totalCost)*100).toFixed(1):0}%</span>`).join('')}
+          </div>
+          ${makeDonutSVG(costSegs,totalCost,110)}
+        </div>
+      </div>
+      <div class="sc" style="margin:0">
+        <div class="sc-head"><span class="sc-title">외주비 카테고리</span></div>
+        <div class="sc-body">
+          ${catData.length?makeBarSVG(catData,170):'<div style="height:150px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--hint);background:var(--bg);border-radius:8px;letter-spacing:0.2px">외주비 항목을 추가하세요</div>'}
+        </div>
+      </div>
+    </div>
+    <div class="sc" style="margin-bottom:12px">
+      <div class="sc-head">
+        <span class="sc-title">투찰율별 영업이익률 추이</span>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${[{l:'이익률',c:'#185FA5'},{l:'현재',c:'#1e3a8a'},{l:'Worst',c:'#A32D2D'},{l:'Average',c:'#854F0B'},{l:'Best',c:'#3B6D11'}].map(d=>`<span style="display:flex;align-items:center;gap:3px;font-size:11px;color:var(--muted);letter-spacing:0.2px"><span style="width:8px;height:8px;border-radius:2px;background:${d.c};display:inline-block"></span>${d.l}</span>`).join('')}
+        </div>
+      </div>
+      <div class="sc-body">${makeLineSVG(linePts,markPts,185)}</div>
+    </div>
+    <div class="sc">
+      <div class="sc-head"><span class="sc-title">손익 계산서 — 투찰율 ${S.bid.toFixed(2)}%</span></div>
+      <div class="sc-body" id="pnl_body">${buildPnLHTML(res)}</div>
+    </div>`;
+}
+
+function buildScenariosHTML(scr){
+  const scKeys=[{k:'worst',label:'Worst',rate:S.sc.worst,c:'#A32D2D'},{k:'avg',label:'Average',rate:S.sc.avg,c:'#854F0B'},{k:'best',label:'Best',rate:S.sc.best,c:'#3B6D11'},{k:'cur',label:'현재',rate:S.bid,c:'#185FA5'}];
+  return`<div class="sc"><div style="overflow-x:auto">
+    <table class="sc-tbl">
+      <colgroup><col style="width:110px">${scKeys.map(()=>'<col>').join('')}</colgroup>
+      <thead><tr>
+        <th>항목</th>
+        ${scKeys.map(s=>`<th style="text-align:center;color:${s.c}">${s.label}<br><span id="sc_hdr_${s.k}" style="font-size:11px;color:var(--hint);font-weight:400">${s.rate.toFixed(2)}%</span></th>`).join('')}
+      </tr></thead>
+      <tbody id="sc_body">${buildScBodyHTML(scr)}</tbody>
+    </table>
+  </div></div>`;
+}
+
+function buildAuditHTML(res){
+  const mms=getMMs();
+  const lines=S.labor.map(r=>{const g=mms[r.grade];return`  • ${GD[r.grade].label} ${r.count}명 × ${r.mm}MM × ${g.mm.toLocaleString()}원 = ${fmtF(fl(g.mm*r.count*r.mm))}`;});
+  const txt=[
+    '━━ ① 매출 산출 ━━',
+    `기초금액 (VAT포함)       = ${fmtF(S.base)}`,
+    `낙찰금액 (×${S.bid.toFixed(2)}%)      = ${fmtF(res.ct)}`,
+    `공급가액 (÷1.1 VAT제외) = ${fmtF(res.rv)}`,
+    '','━━ ② 인건비 상세 ━━',...lines,`인건비 합계              = ${fmtF(res.lc)}`,
+    '','━━ ③ 공헌이익 산출 ━━',
+    `공급가액  ${fmtF(res.rv)}`,`(-) 인건비  ${fmtF(res.lc)}`,`(-) 외주비 공급가 ${fmtF(res.os)}`,`(-) 서버/기타  ${fmtF(res.svc)}`,
+    '──────────────────────────',`= 공헌이익  ${fmtF(res.cn)}`,
+    '','━━ ④ 영업이익 산출 ━━',
+    `공헌이익  ${fmtF(res.cn)}`,`(-) 간접비 (×${S.indr}%)  ${fmtF(res.ic)}`,
+    '──────────────────────────',`= 영업이익  ${fmtF(res.op)}`,`  영업이익률  ${res.mg.toFixed(2)}%`,
+  ].join('\n');
+  return`<div class="sc">
+    <div class="sc-head" style="background:#1a1a18;border-bottom:1px solid #2a2a28">
+      <span style="font-size:12px;font-weight:600;color:#60a5fa;letter-spacing:0.3px">📋 계산 근거 상세 (Audit)</span>
+      <span style="font-size:11px;color:#475569;letter-spacing:0.2px">Math.floor() 절삭</span>
+    </div>
+    <pre id="audit-pre">${txt}</pre>
+  </div>`;
+}
+
+function renderRightFull(){
+  const res=compute(S.bid),scr={worst:compute(S.sc.worst),avg:compute(S.sc.avg),best:compute(S.sc.best),cur:res};
+  setHTML('tab_content',buildTabHTML(res,scr));
+  const h=document.getElementById('inp_base_hint');if(h)h.textContent=`낙찰금액 → ${fmtW(fl(S.base*S.bid/100))}`;
+}
+
+/* ============================================================
+   SVG CHARTS
+============================================================ */
+function makeDonutSVG(segs,total,size){
+  if(!segs.length)return`<div style="height:${size}px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--hint);background:var(--bg);border-radius:8px">데이터 없음</div>`;
+  const cx=size/2,cy=size/2,R=size*.42,r=size*.22;
+  let paths='',ang=-Math.PI/2,sum=segs.reduce((s,d)=>s+d.v,0);
+  segs.forEach(seg=>{const sl=(seg.v/sum)*2*Math.PI,x1=cx+R*Math.cos(ang),y1=cy+R*Math.sin(ang),x2=cx+R*Math.cos(ang+sl),y2=cy+R*Math.sin(ang+sl),xi1=cx+r*Math.cos(ang),yi1=cy+r*Math.sin(ang),xi2=cx+r*Math.cos(ang+sl),yi2=cy+r*Math.sin(ang+sl),lg=sl>Math.PI?1:0;paths+=`<path d="M${xi1},${yi1} L${x1},${y1} A${R},${R} 0 ${lg},1 ${x2},${y2} L${xi2},${yi2} A${r},${r} 0 ${lg},0 ${xi1},${yi1}" fill="${seg.c}" stroke="#fff" stroke-width="2"/>`;ang+=sl;});
+  return`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block;margin:0 auto">${paths}<text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a18">${segs.length}항목</text></svg>`;
+}
+function makeBarSVG(data,height){
+  const W=340,H=height,pL=32,pB=20,pT=6,pR=8,cW=W-pL-pR,cH=H-pB-pT;
+  const maxV=Math.max(...data.map(d=>d.v))*1.1||1;
+  const bw=Math.floor(cW/data.length*.6),gap=(cW-bw*data.length)/(data.length+1);
+  let bars='',lbls='',grid='';
+  for(let i=0;i<=4;i++){const y=pT+cH-cH*i/4,v=maxV*i/4;const lbl=v>=1e8?(v/1e8).toFixed(1)+'억':v>=1e6?(v/1e6).toFixed(1)+'M':'0';grid+=`<line x1="${pL}" y1="${y}" x2="${W-pR}" y2="${y}" stroke="#e8e6df" stroke-width="1"/><text x="${pL-4}" y="${y+4}" text-anchor="end" font-size="8" fill="#a3a29c">${lbl}</text>`;}
+  data.forEach((d,i)=>{const x=pL+gap+(bw+gap)*i,bh=Math.max(2,(d.v/maxV)*cH),y=pT+cH-bh;bars+=`<rect x="${x}" y="${y}" width="${bw}" height="${bh}" fill="${d.color}" rx="3"/>`;lbls+=`<text x="${x+bw/2}" y="${H-5}" text-anchor="middle" font-size="9" fill="#73726c">${d.name}</text>`;});
+  return`<svg width="100%" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="display:block">${grid}${bars}${lbls}<line x1="${pL}" y1="${pT}" x2="${pL}" y2="${pT+cH}" stroke="#e8e6df"/><line x1="${pL}" y1="${pT+cH}" x2="${W-pR}" y2="${pT+cH}" stroke="#e8e6df"/></svg>`;
+}
+function makeLineSVG(pts,marks,height){
+  const W=500,H=height,pL=36,pB=24,pT=8,pR=12,cW=W-pL-pR,cH=H-pB-pT;
+  const minY=Math.min(...pts.map(p=>p.y))-3,maxY=Math.max(...pts.map(p=>p.y))+3;
+  const toX=x=>pL+(x-70)/30*cW,toY=y=>pT+cH-(y-minY)/(maxY-minY)*cH;
+  let grid='',xLbls='',zero='';
+  for(let i=0;i<=4;i++){const y=pT+cH*i/4,v=maxY-(maxY-minY)*i/4;grid+=`<line x1="${pL}" y1="${y}" x2="${W-pR}" y2="${y}" stroke="rgba(0,0,0,0.04)" stroke-width="1"/><text x="${pL-4}" y="${y+4}" text-anchor="end" font-size="8" fill="#a3a29c">${v.toFixed(0)}%</text>`;}
+  [70,75,80,85,90,95,100].forEach(v=>xLbls+=`<text x="${toX(v)}" y="${H-6}" text-anchor="middle" font-size="8" fill="#a3a29c">${v}%</text>`);
+  if(minY<0&&maxY>0)zero=`<line x1="${pL}" y1="${toY(0)}" x2="${W-pR}" y2="${toY(0)}" stroke="#A32D2D" stroke-dasharray="4,3" stroke-width="1" opacity=".5"/>`;
+  const path=pts.map((p,i)=>`${i===0?'M':'L'}${toX(p.x).toFixed(1)},${toY(p.y).toFixed(1)}`).join(' ');
+  const fill=path+` L${toX(100)},${toY(minY)} L${toX(70)},${toY(minY)} Z`;
+  let dots='';marks.forEach(m=>{const y=toY(compute(m.x).mg);dots+=`<circle cx="${toX(m.x).toFixed(1)}" cy="${y.toFixed(1)}" r="${m.r||5}" fill="${m.color}" stroke="#fff" stroke-width="2"/>`;});
+  return`<svg width="100%" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="display:block">${grid}${zero}<path d="${fill}" fill="#185FA5" opacity=".06"/><path d="${path}" fill="none" stroke="#185FA5" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}${xLbls}<line x1="${pL}" y1="${pT}" x2="${pL}" y2="${pT+cH}" stroke="#e8e6df"/><line x1="${pL}" y1="${pT+cH}" x2="${W-pR}" y2="${pT+cH}" stroke="#e8e6df"/><text x="${W/2}" y="${H-1}" text-anchor="middle" font-size="9" fill="#a3a29c">투찰율 (%)</text></svg>`;
+}
+
+/* ============================================================
+   EXPORT
+============================================================ */
+function buildCSV(){
+  const r=compute(S.bid),mms=getMMs();
+  const scr={worst:compute(S.sc.worst),avg:compute(S.sc.avg),best:compute(S.sc.best),cur:r};
+  const Q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const rows=[];
+  rows.push(['B2G 전략 예산 시뮬레이터 — 산출 내역','','생성:',new Date().toLocaleString('ko-KR')]);
+  rows.push([]);
+  rows.push(['[기본 설정]','기초금액','투찰율','제경비율','기술료율','간접비율']);
+  rows.push(['',fmtF(S.base),S.bid.toFixed(2)+'%',S.oh+'%',S.tr+'%',S.indr+'%']);
+  rows.push([]);
+  rows.push(['[손익 계산서]','금액(원)']);
+  [['낙찰금액(VAT포함)',r.ct],['공급가액(매출)',r.rv],['(-) 인건비',-r.lc],['(-) 외주비',-r.os],['(-) 서버/기타',-r.svc],['공헌이익',r.cn],[`(-) 간접비(${S.indr}%)`,-r.ic],['영업이익',r.op]].forEach(([l,v])=>rows.push(['',l,fl(v)]));
+  rows.push(['','영업이익률',r.mg.toFixed(2)+'%']);
+  rows.push([]);
+  rows.push(['[인건비 상세]','등급','인원','MM','M/M단가','소계']);
+  S.labor.forEach(lr=>{const g=mms[lr.grade];rows.push(['',GD[lr.grade].label,lr.count,lr.mm,g.mm,fl(g.mm*lr.count*lr.mm)]);});
+  rows.push([]);
+  rows.push(['[외주비 상세]','카테고리','항목명','입력금액','VAT','공급가액']);
+  S.outs.forEach(o=>{const v=parseFloat(o.amount)||0,sup=o.vatIncl?fl(v/1.1):v;rows.push(['',OCATS.find(c=>c.id===o.catId)?.label||o.catId,o.name,v,o.vatIncl?'포함':'별도',sup]);});
+  rows.push([]);
+  rows.push(['[시나리오 비교]','Worst','Average','Best','현재']);
+  [['공급가액','rv'],['인건비','lc'],['외주비','os'],['공헌이익','cn'],['영업이익','op'],['이익률 (%)','mg']].forEach(([l,k])=>rows.push([l,...['worst','avg','best','cur'].map(sc=>k==='mg'?scr[sc][k].toFixed(2):fl(scr[sc][k]))]));
+  rows.push([]);rows.push(['참고: 한국소프트웨어산업협회 SW사업 대가산정 가이드(2025 개정판)']);
+  return'\uFEFF'+rows.map(r=>r.map(Q).join(',')).join('\r\n');
+}
+function buildJSON(){
+  const r=compute(S.bid),mms=getMMs();
+  return JSON.stringify({meta:{generated:new Date().toISOString(),version:'B2G V2 d\'strict'},params:{base:S.base,bid:S.bid,oh:S.oh,tr:S.tr,wd:S.wd,indr:S.indr,svc:S.svc,gd:S.gd,sc:S.sc},labor:S.labor.map(lr=>({...lr,label:GD[lr.grade].label,mmRate:mms[lr.grade].mm,subtotal:fl(mms[lr.grade].mm*lr.count*lr.mm)})),outs:S.outs.map(o=>{const v=parseFloat(o.amount)||0;return{...o,supply:o.vatIncl?fl(v/1.1):v};}),result:{contractAmt:r.ct,revenue:r.rv,laborCost:r.lc,outsCost:r.os,serverCost:r.svc,directTotal:r.dt,contribution:r.cn,indirectCost:r.ic,opProfit:r.op,margin:r.mg},scenarios:{worst:{rate:S.sc.worst,...compute(S.sc.worst)},avg:{rate:S.sc.avg,...compute(S.sc.avg)},best:{rate:S.sc.best,...compute(S.sc.best)}}},null,2);
+}
+function buildTXT(){
+  const r=compute(S.bid),mms=getMMs(),scr={worst:compute(S.sc.worst),avg:compute(S.sc.avg),best:compute(S.sc.best)};
+  const sep='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
+  return[`2026 B2G 전략 예산 시뮬레이터 — 분석 보고서`,`생성: ${new Date().toLocaleString('ko-KR')}`,sep,
+    `기초금액: ${fmtF(S.base)}  투찰율: ${S.bid.toFixed(2)}%`,`공급가액: ${fmtF(r.rv)}  (낙찰금액 ${fmtF(r.ct)} ÷ 1.1)`,sep,
+    '[손익 계산서]',`공급가액       ${fmtF(r.rv)}`,`(-) 인건비     ${fmtF(r.lc)}`,`(-) 외주비     ${fmtF(r.os)}`,`(-) 서버/기타  ${fmtF(r.svc)}`,
+    '───────────────────',`공헌이익       ${fmtF(r.cn)}`,`(-) 간접비     ${fmtF(r.ic)}`,`영업이익       ${fmtF(r.op)}`,`영업이익률     ${r.mg.toFixed(2)}%`,sep,
+    '[인건비 상세]',...S.labor.map(lr=>{const g=mms[lr.grade];return`  ${GD[lr.grade].label} ${lr.count}명 × ${lr.mm}MM = ${fmtF(fl(g.mm*lr.count*lr.mm))}`;}),sep,
+    '[시나리오]',
+    ...['worst','avg','best'].map(k=>`  ${S.sc[k].toFixed(2)}%: 영업이익 ${fmtW(scr[k].op)}  이익률 ${scr[k].mg.toFixed(2)}%`),
+    `  ${S.bid.toFixed(2)}% (현재): 영업이익 ${fmtW(r.op)}  이익률 ${r.mg.toFixed(2)}%`,sep,
+    `참고: 한국소프트웨어산업협회 SW사업 대가산정 가이드(2025 개정판)`,`d'strict B2G Simulator`,
+  ].join('\n');
+}
+function download(content,filename,mime){
+  const blob=new Blob([content],{type:mime});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},200);
+}
+function datestamp(){return new Date().toISOString().slice(0,10).replace(/-/g,'');}
+
+/* ============================================================
+   SHARE — JSONBin.io 기반 웹 공유
+   흐름: 설정 JSON → POST /v3/b → bin ID 획득 → URL 생성
+         링크 열면 → GET /v3/b/{id} → 설정 복원
+============================================================ */
+const JSONBIN_API='https://api.jsonbin.io/v3/b';
+const JSONBIN_KEY='$2a$10$4XcMKfQ40LuPX3SK.aoPUeOICqxaghtPfaKXa0jucfWr.iJk4FTia';
+let SHARE_OPT='ro';
+
+function selectShareOpt(opt){
+  SHARE_OPT=opt;
+  document.getElementById('sopt-ro').classList.toggle('on',opt==='ro');
+  document.getElementById('sopt-edit').classList.toggle('on',opt==='edit');
+}
+
+function toggleApiKeyVis(){
+  const inp=document.getElementById('inp-apikey');
+  if(!inp)return;
+  inp.type=inp.type==='password'?'text':'password';
+}
+
+function resetShareModal(){
+  document.getElementById('share-step1').style.display='block';
+  document.getElementById('share-step2').style.display='none';
+  document.getElementById('share-err').style.display='none';
+  const btn=document.getElementById('btn-create-link');
+  const txt=document.getElementById('btn-create-txt');
+  if(btn){btn.disabled=false;btn.style.background='';}
+  if(txt)txt.textContent='공유 링크 생성';
+}
+
+async function createShareLink(){
+  const inputKey=(document.getElementById('inp-apikey')?.value||'').trim();
+  const apiKey=inputKey||JSONBIN_KEY;
+
+  // 저장 옵션 (커스텀 키 입력 시)
+  if(inputKey&&document.getElementById('chk-save-key')?.checked){
+    lsSet('b2g4_apikey', inputKey);
+  }
+
+  const btn=document.getElementById('btn-create-link');
+  const txt=document.getElementById('btn-create-txt');
+  if(btn)btn.disabled=true;
+  if(txt)txt.textContent='저장 중...';
+  document.getElementById('share-err').style.display='none';
+
+  const payload={
+    base:S.base,bid:S.bid,oh:S.oh,tr:S.tr,wd:S.wd,
+    gd:S.gd,labor:S.labor,outs:S.outs,
+    svc:S.svc,indr:S.indr,sc:S.sc,
+    _ro:false,
+    _ts:new Date().toISOString()
+  };
+
+  try{
+    const res=await fetch(JSONBIN_API,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'X-Master-Key':apiKey,
+        'X-Bin-Private':'false',
+        'X-Bin-Name':'B2G_'+new Date().toISOString().slice(0,10)
+      },
+      body:JSON.stringify(payload)
+    });
+
+    if(!res.ok){
+      const errData=await res.json().catch(()=>({}));
+      const msg=errData.message||('HTTP '+res.status);
+      if(res.status===401)showShareErr('API 키가 올바르지 않습니다. jsonbin.io에서 Secret Key를 다시 확인하세요.');
+      else showShareErr('저장 실패: '+msg);
+      if(btn)btn.disabled=false;
+      if(txt)txt.textContent='공유 링크 생성';
+      return;
+    }
+
+    const data=await res.json();
+    const binId=data.metadata?.id||data.record?.id||data?.id;
+    if(!binId){showShareErr('Bin ID를 가져오지 못했습니다. 다시 시도해주세요.');if(btn)btn.disabled=false;if(txt)txt.textContent='공유 링크 생성';return;}
+
+    // 공유 링크 = 현재 파일 URL + ?bin=ID
+    const baseURL=location.href.split('?')[0].split('#')[0];
+    const shareURL=baseURL+'?bin='+binId;
+
+    // Step 2 표시
+    document.getElementById('share-step1').style.display='none';
+    document.getElementById('share-step2').style.display='block';
+    const resInp=document.getElementById('share-result-url');
+    if(resInp)resInp.value=shareURL;
+    const modeNote=document.getElementById('share-mode-note');
+    if(modeNote)modeNote.textContent=SHARE_OPT==='ro'?'👁 열람 전용 모드':'✏️ 편집 가능 모드';
+
+    // 클립보드 자동 복사 시도
+    navigator.clipboard.writeText(shareURL).catch(()=>{});
+
+  }catch(e){
+    showShareErr('네트워크 오류: '+e.message);
+    if(btn)btn.disabled=false;
+    if(txt)txt.textContent='공유 링크 생성';
+  }
+}
+
+function showShareErr(msg){
+  const el=document.getElementById('share-err');
+  if(el){el.style.display='block';el.textContent=msg;}
+}
+
+function copyFinalURL(){
+  const inp=document.getElementById('share-result-url');
+  if(!inp)return;
+  navigator.clipboard.writeText(inp.value).then(()=>{
+    const btn=document.getElementById('btn-copy-final');
+    if(btn){btn.textContent='복사됨 ✓';btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='복사';btn.classList.remove('copied');},2000);}
+  }).catch(()=>{inp.select();document.execCommand('copy');});
+}
+
+async function loadFromBin(binId){
+  try{
+    const res=await fetch(JSONBIN_API+'/'+binId+'/latest',{
+      headers:{'X-Bin-Meta':'false'}
+    });
+    if(!res.ok)return null;
+    const data=await res.json();
+    return data.record||data;
+  }catch(e){return null;}
+}
+
+function buildShareURL(){
+  // fallback: URL hash 방식 (사용 안 함, 호환성 유지)
+  return location.href;
+}
+
+function doCopyURL(){}  // 미사용 stub
+
+
+/* ============================================================
+   SNAPSHOT
+============================================================ */
+function getSnaps(){return lsGet('b2g4_snaps',[]);}
+function saveSnaps(s){lsSet('b2g4_snaps',s);}
+function saveSnapshot(name){
+  const r=compute(S.bid);
+  const snap={id:Date.now(),name:name||('스냅샷 '+(getSnaps().length+1)),ts:new Date().toLocaleString('ko-KR',{hour12:false}),state:JSON.parse(JSON.stringify(S)),result:{ct:r.ct,rv:r.rv,lc:r.lc,os:r.os,dt:r.dt,cn:r.cn,ic:r.ic,op:r.op,mg:r.mg}};
+  const snaps=getSnaps();snaps.unshift(snap);if(snaps.length>10)snaps.pop();saveSnaps(snaps);renderSnapList();
+}
+function loadSnapshot(id){
+  const snap=getSnaps().find(s=>s.id===id);if(!snap)return;
+  Object.assign(S,JSON.parse(JSON.stringify(snap.state)));saveAll();
+  buildLeft();buildRight();BASELINE=snap.result;
+  const t=document.getElementById('confirm-time');if(t)t.textContent=snap.ts+' 스냅샷';
+  closeModal('modal-snapshot');
+}
+function deleteSnapshot(id){saveSnaps(getSnaps().filter(s=>s.id!==id));renderSnapList();}
+function renderSnapList(){
+  const el=document.getElementById('snap-list');if(!el)return;
+  const snaps=getSnaps();
+  if(!snaps.length){el.innerHTML='<p style="text-align:center;font-size:12px;color:var(--hint);padding:16px 0;letter-spacing:0.2px">저장된 스냅샷이 없습니다.</p>';return;}
+  el.innerHTML=snaps.map(s=>{
+    const mc=s.result.mg>=10?'var(--green-bg),#c0dd97,var(--kpi-green)':s.result.mg>=0?'var(--amber-bg),#f0d9a0,var(--kpi-yellow)':'var(--red-bg),#f5b7b7,var(--kpi-red)';
+    const[bg,bdr,col]=mc.split(',');
+    return`<div class="snap-item">
+      <div class="snap-info"><div class="snap-name">${s.name}</div><div class="snap-meta">${s.ts} · 기초금액 ${fmtW(s.state.base)} · 투찰율 ${s.state.bid.toFixed(2)}%</div></div>
+      <span class="snap-badge" style="background:${bg};border:1px solid ${bdr};color:${col}">${s.result.mg.toFixed(2)}%</span>
+      <div class="snap-act">
+        <button onclick="loadSnapshot(${s.id})">불러오기</button>
+        <button onclick="deleteSnapshot(${s.id})" style="color:var(--red)">삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   MODAL
+============================================================ */
+function openModal(id){
+  const el=document.getElementById(id);if(el)el.style.display='flex';
+  if(id==='modal-snapshot')renderSnapList();
+  if(id==='modal-share'){resetShareModal();}
+}
+function closeModal(id){const el=document.getElementById(id);if(el)el.style.display='none';}
+
+function bindActionBar(){
+  document.getElementById('btn-confirm').addEventListener('click',doConfirm);
+  document.getElementById('btn-export').addEventListener('click',()=>{openModal('modal-export');});
+  document.getElementById('btn-share').addEventListener('click',()=>openModal('modal-share'));
+  document.getElementById('btn-snapshot').addEventListener('click',()=>{openModal('modal-snapshot');});
+  document.addEventListener('click',e=>{
+    const close=e.target.dataset.close||e.target.closest('[data-close]')?.dataset?.close;
+    if(close){closeModal(close);return;}
+    if(e.target.classList.contains('modal-overlay'))closeModal(e.target.id);
+  });
+  document.getElementById('exp-csv').addEventListener('click',()=>{download(buildCSV(),'B2G_'+datestamp()+'.csv','text/csv;charset=utf-8');closeModal('modal-export');});
+  document.getElementById('exp-json').addEventListener('click',()=>{download(buildJSON(),'B2G_'+datestamp()+'.json','application/json');closeModal('modal-export');});
+  document.getElementById('exp-txt').addEventListener('click',()=>{download(buildTXT(),'B2G_'+datestamp()+'.txt','text/plain;charset=utf-8');closeModal('modal-export');});
+  // JSONBin 공유: 버튼들은 inline onclick으로 처리
+  document.getElementById('btn-snap-save').addEventListener('click',()=>{const name=document.getElementById('snap-name-inp').value.trim();saveSnapshot(name||undefined);document.getElementById('snap-name-inp').value='';});
+}
+
+/* ============================================================
+   BOOT — 로그인 없이 바로 시작
+============================================================ */
+(function(){
+  const binId=new URLSearchParams(location.search).get('bin');
+  if(binId){
+    history.replaceState(null,'',location.pathname);
+    loadFromBin(binId).then(data=>{
+      if(data&&(data.base||data.bid)){
+        Object.keys(data).filter(k=>!k.startsWith('_')).forEach(k=>{if(S[k]!==undefined)S[k]=data[k];});
+        saveAll();
+        sessionStorage.setItem('b2g5_s','1');
+      }
+      enterApp();
+    });
+  } else {
+    enterApp();
+  }
+})();
+</script>
+</body>
+</html>
