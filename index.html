@@ -34,7 +34,59 @@ html,body{height:100%;font-family:var(--font);font-weight:300;font-size:14px;lin
 input,select,button,textarea{font-family:var(--font)}
 button{cursor:pointer}
 
-/* LOGIN/RO CSS 제거 */
+/* ═══════════════════ LOGIN SCREEN ═══════════════════ */
+#screen-login{
+  display:none;position:fixed;inset:0;
+  background:var(--bg);
+  align-items:center;justify-content:center;
+  z-index:9999;
+}
+#screen-login.active{display:none!important}
+.login-wrap{width:100%;max-width:380px;padding:20px}
+.login-card{
+  background:var(--card);border-radius:14px;
+  border:1px solid var(--border);
+  box-shadow:0 8px 40px rgba(0,0,0,.09);
+  padding:36px 32px;
+}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo-mark{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:52px;height:52px;border-radius:13px;
+  background:var(--purple-bg);margin-bottom:12px;
+}
+.login-title{font-size:20px;font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--muted);letter-spacing:0.2px}
+.login-field{margin-bottom:14px}
+.login-field label{display:block;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.3px;margin-bottom:6px}
+.login-input{
+  width:100%;padding:10px 12px;font-size:13px;font-weight:400;
+  border:1px solid var(--border);border-radius:8px;
+  background:var(--bg);color:var(--text);outline:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+.login-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83,74,183,.12)}
+.login-btn{
+  width:100%;padding:11px;font-size:13px;font-weight:600;
+  border:none;border-radius:8px;
+  background:var(--purple);color:#fff;
+  cursor:pointer;margin-top:6px;letter-spacing:0.2px;
+  transition:background .15s;
+}
+.login-btn:hover{background:#4239a0}
+.login-error{
+  display:none;background:var(--red-bg);color:var(--red);
+  border:1px solid #f5b7b7;border-radius:7px;
+  padding:9px 12px;font-size:12px;letter-spacing:0.2px;margin-top:10px;
+}
+.login-error.show{display:block}
+.login-hint{
+  margin-top:16px;padding:10px 12px;background:var(--amber-bg);
+  border-radius:7px;font-size:11px;color:var(--amber);letter-spacing:0.3px;text-align:center;
+}
+.login-hint code{background:rgba(0,0,0,.07);padding:1px 5px;border-radius:3px;font-family:monospace}
+
+/* READ-ONLY BANNER */
 #ro-banner{
   display:none;background:#1a1a18;color:#fff;
   padding:9px 20px;font-size:12px;font-weight:500;
@@ -391,7 +443,17 @@ table.sc-tbl tr:hover td{background:#fafaf7}
 .eb{height:4px;border-radius:2px;background:var(--border)}
 .ebf{height:100%;border-radius:2px;transition:width .3s}
 
-
+/* READONLY overlay on inputs */
+body.readonly .inp, body.readonly .dual-num, body.readonly .num-inp,
+body.readonly .grade-sel, body.readonly .vat-btn, body.readonly .pre-btn,
+body.readonly input[type=range]{
+  pointer-events:none;opacity:.7;cursor:default;
+}
+body.readonly .btn-cta, body.readonly .act-btn:not(.always-active),
+body.readonly #btn-confirm, body.readonly #btn-snapshot{
+  pointer-events:none;opacity:.45;cursor:default;
+}
+body.readonly .icon-btn{pointer-events:none;opacity:.4}
 
 /* RESPONSIVE */
 @media(max-width:900px){
@@ -409,6 +471,40 @@ table.sc-tbl tr:hover td{background:#fafaf7}
 </head>
 <body>
 
+<!-- ════ LOGIN SCREEN ════ -->
+<div id="screen-login" class="active">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-mark">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        </div>
+        <div class="login-title">B2G 전략 예산 시뮬레이터</div>
+        <div class="login-sub">2026년 노임단가 · 2025 개정 가이드 기준</div>
+      </div>
+      <div class="login-field">
+        <label>아이디</label>
+        <input id="inp-uid" type="text" class="login-input" placeholder="아이디를 입력하세요" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('inp-pw').focus()">
+      </div>
+      <div class="login-field">
+        <label>비밀번호</label>
+        <input id="inp-pw" type="password" class="login-input" placeholder="비밀번호를 입력하세요" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div id="login-err" class="login-error">아이디 또는 비밀번호가 올바르지 않습니다.</div>
+      <button class="login-btn" onclick="doLogin()">로그인</button>
+      <div class="login-hint">테스트 계정: <code>admin</code> / <code>1234</code> &nbsp;|&nbsp; 일반: <code>user</code> / <code>pass</code></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ READ-ONLY BANNER ════ -->
+<div id="ro-banner">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+  <span class="ro-badge">열람 전용</span>
+  <span>공유 링크로 접속한 읽기 전용 뷰입니다. 수정하려면 로그인하세요.</span>
+  <div style="flex:1"></div>
+  <button class="tb-btn" onclick="switchToLogin()">로그인하여 편집</button>
+</div>
 
 <!-- ════ MAIN APP ════ -->
 <div id="app">
@@ -422,7 +518,6 @@ table.sc-tbl tr:hover td{background:#fafaf7}
     </div>
     <span class="tb-tag">2026 노임단가 · 2025 개정</span>
     <div class="tb-sep"></div>
-    <span style="font-size:11px;color:var(--hint);letter-spacing:0.3px">d'strict B2G Simulator</span>
   </div>
 
   <!-- VAT Banner -->
@@ -602,45 +697,92 @@ const PNL_DEFS=[
   {label:'영업이익률',key:'mg',indent:false,bold:true,sep:true,pct:true},
 ];
 
-/* 인증 없음 — 공개 접근 */
-let CURRENT_USER={id:'public',name:'',role:'admin'};
+/* ============================================================
+   AUTH
+============================================================ */
+let CURRENT_USER=null;
 let IS_READONLY=false;
 
-function getDefaultState(){
-  return{
-    base:550000000,bid:87.99,oh:145,tr:20,wd:21.0,
-    gd:{S:568663,A:427566,B:336666,C:302999},
-    labor:[
-      {id:1,grade:'A',role:'dev', count:3,mm:6.0},
-      {id:2,grade:'S',role:'pm',  count:1,mm:6.0},
-      {id:3,grade:'B',role:'plan',count:2,mm:4.0}
-    ],
-    outs:[],svc:0,indr:10,
-    sc:{worst:85,avg:90,best:95},
-    memo:'',
-  };
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+function lsDel(k){try{localStorage.removeItem(k);}catch{}}
+
+function doLogin(){
+  const uid=document.getElementById('inp-uid').value.trim();
+  const pw=document.getElementById('inp-pw').value;
+  const u=USERS.find(u=>u.id===uid&&u.pw===pw);
+  const err=document.getElementById('login-err');
+  if(!u){err.classList.add('show');return;}
+  err.classList.remove('show');
+  CURRENT_USER=u;
+  IS_READONLY=false;
+  lsSet('b2g_session',{id:u.id,name:u.name,role:u.role});
+  document.body.classList.remove('readonly');
+  enterApp();
+}
+
+function doLogout(){
+  CURRENT_USER=null;IS_READONLY=false;
+  lsDel('b2g_session');
+  document.getElementById('screen-login').classList.add('active');
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('ro-banner').classList.remove('show');
+  document.getElementById('inp-pw').value='';
+  document.getElementById('login-err').classList.remove('show');
 }
 
 function enterApp(){
+  document.getElementById('screen-login').classList.remove('active');
   document.getElementById('app').classList.add('active');
-  if(!sessionStorage.getItem('b2g5_s')){
-    const d=getDefaultState();
-    Object.keys(d).forEach(k=>{S[k]=JSON.parse(JSON.stringify(d[k]));});
-    saveAll();
-    sessionStorage.setItem('b2g5_s','1');
-  }
-  const cb=document.getElementById('confirm-bar');
-  if(cb)cb.style.display='block';
+  const nameEl=document.getElementById('tb-user-name');
+  if(nameEl) nameEl.textContent=CURRENT_USER?CURRENT_USER.name+'님 ('+CURRENT_USER.role+')':'열람 중';
   buildLeft();buildRight();bindActionBar();
-  autoSetScenarios();
-  BASELINE=null;
+  autoSetScenarios();  // 초기 진입 시 Best/Worst 자동 계산
+  BASELINE=null;  // 확정 전까지 대기 화면 유지
   document.getElementById('confirm-time').textContent='';
 }
 
-function enterReadOnly(){}
-function switchToLogin(){}
-function doLogin(){}
-function doLogout(){}
+function enterReadOnly(data){
+  IS_READONLY=true;CURRENT_USER=null;
+  // Apply shared state
+  if(data.base)S.base=data.base;if(data.bid)S.bid=data.bid;
+  if(data.oh)S.oh=data.oh;if(data.tr)S.tr=data.tr;
+  if(data.wd)S.wd=data.wd;if(data.gd)S.gd=data.gd;
+  if(data.labor)S.labor=data.labor;if(data.outs)S.outs=data.outs;
+  if(data.svc)S.svc=data.svc;if(data.indr)S.indr=data.indr;
+  if(data.sc)S.sc=data.sc;
+  document.body.classList.add('readonly');
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('app').classList.add('active');
+  document.getElementById('ro-banner').classList.add('show');
+  const nameEl=document.getElementById('tb-user-name');
+  if(nameEl) nameEl.textContent='읽기 전용';
+  // Disable confirm/snapshot in action bar
+  ['btn-confirm','btn-snapshot','btn-export'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.disabled=true;
+  });
+  buildLeft();buildRight();
+  // Share button still works in readonly
+  document.getElementById('btn-share').addEventListener('click',()=>openModal('modal-share'));
+  document.addEventListener('click',e=>{
+    const close=e.target.dataset.close||e.target.closest('[data-close]')?.dataset?.close;
+    if(close)closeModal(close);
+    if(e.target.classList.contains('modal-overlay'))closeModal(e.target.id);
+  });
+  // Update share URL display
+  document.getElementById('btn-copy-url')?.addEventListener('click',doCopyURL);
+  document.getElementById('btn-copy-url2')?.addEventListener('click',doCopyURL);
+  BASELINE=snapshotResult();
+}
+
+function switchToLogin(){
+  IS_READONLY=false;
+  document.body.classList.remove('readonly');
+  document.getElementById('ro-banner').classList.remove('show');
+  document.getElementById('screen-login').classList.add('active');
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('inp-uid').focus();
+}
 
 /* ============================================================
    STATE
@@ -764,7 +906,7 @@ function snapshotResult(){
     ts:new Date().toLocaleString('ko-KR',{hour12:false})};
 }
 function markDirty(){
-  
+  if(IS_READONLY)return;
   if(!BASELINE)return;  // 초기 대기 상태
   IS_DIRTY=true;
   const btn=document.getElementById('btn-confirm');
@@ -772,7 +914,7 @@ function markDirty(){
   if(btn){btn.className='dirty';if(txt)txt.textContent='변경 적용 ●';}
 }
 function doConfirm(){
-  
+  if(IS_READONLY)return;
 
   // 1) 시나리오 투찰율 자동 계산
   autoSetScenarios();
@@ -1046,7 +1188,7 @@ function buildLeft(){
       }).join('')}</div>
     </div>
     <div style="text-align:center;font-size:10px;color:var(--hint);padding-bottom:8px;letter-spacing:0.2px">
-      ${'💾 입력값 자동 저장'}
+      ${IS_READONLY?'🔒 읽기 전용 모드':'💾 입력값 자동 저장'}
     </div>
   `;
   bindLeftEvents();
@@ -1149,25 +1291,25 @@ function bindLeftEvents(){
     if(e.target.closest('#param_head')){UI.pOpen=!UI.pOpen;document.getElementById('param_body').style.display=UI.pOpen?'block':'none';document.getElementById('param_arrow').textContent=UI.pOpen?'▲':'▼';return;}
     if(e.target.id==='btn_reset_all'){S.gd={...DAILY_DEF};['S','A','B','C'].forEach(k=>{const el=document.getElementById('inp_gd_'+k);if(el)el.value=DAILY_DEF[k];});saveKey('gd');onParamChange();return;}
     const rst=e.target.dataset.rst;if(rst){S.gd[rst]=DAILY_DEF[rst];const el=document.getElementById('inp_gd_'+rst);if(el)el.value=DAILY_DEF[rst];saveKey('gd');onParamChange();return;}
-    if(e.target.id==='btn_add_labor'){{S.labor.push({id:uid(),grade:'B',role:'dev',count:1,mm:3.0});saveKey('labor');refreshLaborList();onCostChange();}return;}
-    const dl=e.target.dataset.delLabor;if(dl){{S.labor=S.labor.filter(r=>r.id!=dl);if(UI.detId==dl)UI.detId=null;saveKey('labor');refreshLaborList();onCostChange();}return;}
+    if(e.target.id==='btn_add_labor'){if(!IS_READONLY){S.labor.push({id:uid(),grade:'B',role:'dev',count:1,mm:3.0});saveKey('labor');refreshLaborList();onCostChange();}return;}
+    const dl=e.target.dataset.delLabor;if(dl){if(!IS_READONLY){S.labor=S.labor.filter(r=>r.id!=dl);if(UI.detId==dl)UI.detId=null;saveKey('labor');refreshLaborList();onCostChange();}return;}
     const det=e.target.dataset.det;if(det){UI.detId=UI.detId==det?null:parseInt(det);refreshLaborList();return;}
-    if(e.target.id==='btn_add_outs'){{S.outs.push({id:uid(),catId:'contents',name:'',amount:0,vatIncl:false});saveKey('outs');refreshOutsList();onCostChange();}return;}
-    const dlo=e.target.dataset.delOut;if(dlo){{S.outs=S.outs.filter(r=>r.id!=dlo);saveKey('outs');refreshOutsList();onCostChange();}return;}
+    if(e.target.id==='btn_add_outs'){if(!IS_READONLY){S.outs.push({id:uid(),catId:'contents',name:'',amount:0,vatIncl:false});saveKey('outs');refreshOutsList();onCostChange();}return;}
+    const dlo=e.target.dataset.delOut;if(dlo){if(!IS_READONLY){S.outs=S.outs.filter(r=>r.id!=dlo);saveKey('outs');refreshOutsList();onCostChange();}return;}
     const vat=e.target.dataset.vat;if(vat){if(!IS_READONLY){const row=S.outs.find(r=>r.id==vat);if(row){row.vatIncl=!row.vatIncl;saveKey('outs');refreshOutsList();onCostChange();}}return;}
   });
   leftEl.addEventListener('change',e=>{
     const lid=e.target.dataset.lid,lf=e.target.dataset.lf;
-    if(lid&&lf){const row=S.labor.find(r=>r.id==lid);if(!row)return;if(lf==='role')row.role=e.target.value;else if(lf==='grade')row.grade=e.target.value;else if(lf==='count')row.count=Math.max(1,parseInt(e.target.value)||1);else if(lf==='mm')row.mm=Math.max(0.1,parseFloat(e.target.value)||0.1);saveKey('labor');refreshLaborList();onCostChange();return;}
+    if(lid&&lf&&!IS_READONLY){const row=S.labor.find(r=>r.id==lid);if(!row)return;if(lf==='role')row.role=e.target.value;else if(lf==='grade')row.grade=e.target.value;else if(lf==='count')row.count=Math.max(1,parseInt(e.target.value)||1);else if(lf==='mm')row.mm=Math.max(0.1,parseFloat(e.target.value)||0.1);saveKey('labor');refreshLaborList();onCostChange();return;}
     const oid=e.target.dataset.oid,of_=e.target.dataset.of;
-    if(oid&&of_&&of_!=='name'&&of_!=='amount'){const row=S.outs.find(r=>r.id==oid);if(!row)return;row[of_]=e.target.value;saveKey('outs');refreshOutsList();onCostChange();}
+    if(oid&&of_&&of_!=='name'&&of_!=='amount'&&!IS_READONLY){const row=S.outs.find(r=>r.id==oid);if(!row)return;row[of_]=e.target.value;saveKey('outs');refreshOutsList();onCostChange();}
   });
   leftEl.addEventListener('input',e=>{
-    if(e.target.dataset.of==='name'){const row=S.outs.find(r=>r.id==e.target.dataset.oid);if(row){row.name=e.target.value;saveKey('outs');}}
+    if(e.target.dataset.of==='name'&&!IS_READONLY){const row=S.outs.find(r=>r.id==e.target.dataset.oid);if(row){row.name=e.target.value;saveKey('outs');}}
   });
   leftEl.addEventListener('focus',e=>{if(e.target.dataset.of==='amount'){const n=parseComma(e.target.value);e.target.value=n===0?'':String(n);e.target.select();}},true);
   leftEl.addEventListener('input',e=>{
-    if(e.target.dataset.of==='amount'){const row=S.outs.find(r=>r.id==e.target.dataset.oid);if(!row)return;row.amount=parseInt(e.target.value.replace(/[^\d]/g,''),10)||0;saveKey('outs');const wrap=e.target.closest('[data-outs-row]');if(wrap){const v=row.amount,sup=row.vatIncl?fl(v/1.1):v;let sd=wrap.querySelector('.sup-display');if(!sd){sd=document.createElement('div');sd.className='sup-display';sd.style.cssText='margin-top:5px;font-size:11px;color:var(--hint);letter-spacing:0.2px';wrap.appendChild(sd);}sd.innerHTML=v>0?`→ 공급가액: <strong style="color:var(--muted)">${fmtF(sup)}</strong>`:'';}onCostChange();}
+    if(e.target.dataset.of==='amount'&&!IS_READONLY){const row=S.outs.find(r=>r.id==e.target.dataset.oid);if(!row)return;row.amount=parseInt(e.target.value.replace(/[^\d]/g,''),10)||0;saveKey('outs');const wrap=e.target.closest('[data-outs-row]');if(wrap){const v=row.amount,sup=row.vatIncl?fl(v/1.1):v;let sd=wrap.querySelector('.sup-display');if(!sd){sd=document.createElement('div');sd.className='sup-display';sd.style.cssText='margin-top:5px;font-size:11px;color:var(--hint);letter-spacing:0.2px';wrap.appendChild(sd);}sd.innerHTML=v>0?`→ 공급가액: <strong style="color:var(--muted)">${fmtF(sup)}</strong>`:'';}onCostChange();}
   });
   leftEl.addEventListener('blur',e=>{if(e.target.dataset.of==='amount'){const row=S.outs.find(r=>r.id==e.target.dataset.oid);if(row)e.target.value=fmtComma(row.amount);}},true);
 }
@@ -1513,7 +1655,7 @@ async function createShareLink(){
     base:S.base,bid:S.bid,oh:S.oh,tr:S.tr,wd:S.wd,
     gd:S.gd,labor:S.labor,outs:S.outs,
     svc:S.svc,indr:S.indr,sc:S.sc,
-    _ro:false,
+    _ro:SHARE_OPT==='ro',
     _ts:new Date().toISOString()
   };
 
@@ -1647,9 +1789,9 @@ function closeModal(id){const el=document.getElementById(id);if(el)el.style.disp
 
 function bindActionBar(){
   document.getElementById('btn-confirm').addEventListener('click',doConfirm);
-  document.getElementById('btn-export').addEventListener('click',()=>{openModal('modal-export');});
+  document.getElementById('btn-export').addEventListener('click',()=>{if(!IS_READONLY)openModal('modal-export');});
   document.getElementById('btn-share').addEventListener('click',()=>openModal('modal-share'));
-  document.getElementById('btn-snapshot').addEventListener('click',()=>{openModal('modal-snapshot');});
+  document.getElementById('btn-snapshot').addEventListener('click',()=>{if(!IS_READONLY)openModal('modal-snapshot');});
   document.addEventListener('click',e=>{
     const close=e.target.dataset.close||e.target.closest('[data-close]')?.dataset?.close;
     if(close){closeModal(close);return;}
@@ -1666,6 +1808,7 @@ function bindActionBar(){
    BOOT — 로그인 없이 바로 시작
 ============================================================ */
 (function(){
+  // ?bin= 공유 링크 처리
   const binId=new URLSearchParams(location.search).get('bin');
   if(binId){
     history.replaceState(null,'',location.pathname);
@@ -1675,10 +1818,29 @@ function bindActionBar(){
         saveAll();
         sessionStorage.setItem('b2g5_s','1');
       }
-      enterApp();
+      startApp();
     });
   } else {
-    enterApp();
+    startApp();
+  }
+
+  function startApp(){
+    // 새 세션이면 기본값으로 초기화
+    if(!sessionStorage.getItem('b2g5_s')){
+      ['base','bid','oh','tr','wd','gd','labor','outs','svc','indr','sc','memo'].forEach(k=>lsDel('b2g4_'+k));
+      sessionStorage.setItem('b2g5_s','1');
+    }
+    // 로그인 화면 건너뛰고 앱 바로 진입
+    CURRENT_USER={id:'public',name:'',role:'admin'};
+    IS_READONLY=false;
+    document.getElementById('screen-login').classList.remove('active');
+    document.getElementById('app').classList.add('active');
+    const cb=document.getElementById('confirm-bar');
+    if(cb)cb.style.display='block';
+    buildLeft();buildRight();bindActionBar();
+    autoSetScenarios();
+    BASELINE=null;
+    document.getElementById('confirm-time').textContent='';
   }
 })();
 </script>
