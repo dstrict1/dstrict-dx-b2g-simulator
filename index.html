@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>d'strict B2G Simulator Vol.1.2</title>
-<meta property="og:title" content="d'strict B2G Simulator Vol.1.2">
+<title>d'strict B2G Simulator Vol.1.2.1</title>
+<meta property="og:title" content="d'strict B2G Simulator Vol.1.2.1">
 <meta property="og:url" content="https://shin3164.github.io/dstrict-dx-b2g-simulator/">
 <meta property="og:description" content="d'strict B2G 전략 예산 시뮬레이터 — 공공사업 투찰율·손익 분석 도구">
 <style>
@@ -512,6 +512,80 @@ body.readonly .icon-btn{pointer-events:none;opacity:.4}
   .tb-nav-btn span{display:none}
   #topbar{gap:2px;padding:0 8px}
 }
+
+/* ── Tooltip ── */
+.tip-wrap{position:relative;display:inline-flex;align-items:center;margin-left:5px;cursor:help}
+.tip-icon{width:15px;height:15px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple);color:var(--purple);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--font);line-height:1}
+.tip-box{display:none;position:fixed;width:240px;background:#1a1a18;color:#fff;font-size:11px;line-height:1.6;padding:10px 12px;border-radius:9px;z-index:9999;letter-spacing:0.2px;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+.tip-box::after{content:'';position:absolute;top:100%;left:16px;border:5px solid transparent;border-top-color:#1a1a18}
+/* tip position set by JS */
+
+/* ── 실시간 반영 표시 ── */
+.live-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--green);letter-spacing:0.3px}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:livePulse 1.4s ease-in-out infinite}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(0.7)}}
+
+/* ── 좌측 sc 아코디언 헤더 hover ── */
+.sc-head.clickable{cursor:pointer;user-select:none}
+.sc-head.clickable:hover{background:var(--purple-bg)}
+
+/* ── KPI sticky bar ── */
+#kpi-sticky{
+  position:sticky;top:0;z-index:200;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  padding:8px 16px;
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  flex-shrink:0;
+}
+.kpi-s{display:flex;flex-direction:column;padding:6px 12px;border-radius:8px;min-width:90px;flex:1}
+.kpi-s-lbl{font-size:9px;color:var(--hint);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:2px}
+.kpi-s-val{font-size:14px;font-weight:700;letter-spacing:-0.3px}
+
+/* ── 외주비 항목 행 정렬 ── */
+.outs-row-inner{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+/* ── UX 개선 Vol.1.2.1 ── */
+
+/* 좌측 스크롤 시 결과 고정 */
+#left{scroll-behavior:smooth}
+
+/* sc 카드 transition */
+.sc{transition:box-shadow .15s}
+.sc:focus-within{box-shadow:0 0 0 2px var(--purple-bg)}
+
+/* 아코디언 body 전환 */
+[id^="acc-body-"]{overflow:hidden;transition:max-height .25s ease}
+
+/* 입력 포커스 시 강조 */
+.inp:focus{border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-bg)}
+.grade-sel:focus{outline:2px solid var(--purple);outline-offset:1px}
+
+/* 적용 버튼 hover */
+button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
+
+/* 툴팁 아이콘 hover 시 색상 전환 */
+.tip-icon:hover{background:var(--purple);color:#fff;border-color:var(--purple)}
+
+/* KPI sticky 스크롤 시 shadow */
+#kpi-sticky.scrolled{box-shadow:0 4px 16px rgba(0,0,0,.1)}
+
+/* 우측 탭 언더라인 */
+.tab.on{font-weight:700;letter-spacing:-0.3px}
+
+/* 비용구조 legend 줄바꿈 방지 */
+.chart-grid-2col .sc-body{overflow:visible}
+
+/* pnl-row tip 정렬 */
+.pnl-row span{display:flex;align-items:center;flex-wrap:nowrap}
+
+/* 모바일 kpi-sticky 간소화 */
+@media(max-width:640px){
+  #kpi-sticky .kpi-s-lbl{display:none}
+  #kpi-sticky .kpi-s-val{font-size:12px}
+  #kpi-sticky .live-badge{display:none}
+}
 </style>
 </head>
 <body>
@@ -559,7 +633,7 @@ body.readonly .icon-btn{pointer-events:none;opacity:.4}
       <div class="tb-logo-mark">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
       </div>
-      <span class="tb-name">d'strict B2G Simulator <span style='font-size:10px;font-weight:400;opacity:.7'>Vol.1.2</span></span>
+      <span class="tb-name">d'strict B2G Simulator <span style='font-size:10px;font-weight:400;opacity:.7'>Vol.1.2.1</span></span>
     </div>
     <!-- 네비게이션 메뉴 -->
     <div id="tb-nav" style="display:flex;align-items:center;gap:2px;margin-left:12px">
@@ -617,7 +691,7 @@ body.readonly .icon-btn{pointer-events:none;opacity:.4}
         <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;background:var(--purple);margin-bottom:14px">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
         </div>
-        <h1 style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:6px">d'strict B2G Simulator Vol.1.2</h1>
+        <h1 style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:6px">d'strict B2G Simulator Vol.1.2.1</h1>
         <p style="font-size:13px;color:var(--muted);letter-spacing:0.2px">2026 KOSA 노임단가 기준 · SW사업 대가산정 가이드(2025 개정판)</p>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="home-menu-grid">
@@ -662,6 +736,30 @@ body.readonly .icon-btn{pointer-events:none;opacity:.4}
   </div>
 
   <!-- Main (Simulator) -->
+  <!-- ── 상단 고정 KPI 요약 ── -->
+  <div id="kpi-sticky" style="display:none">
+    <div class="live-badge"><span class="live-dot"></span>실시간</div>
+    <div class="kpi-s" id="ks-bid">
+      <span class="kpi-s-lbl">투찰금액(VAT포함)</span>
+      <span class="kpi-s-val" id="ks-bid-v">—</span>
+    </div>
+    <div class="kpi-s" id="ks-rv">
+      <span class="kpi-s-lbl">공급가액(매출)</span>
+      <span class="kpi-s-val" id="ks-rv-v" style="color:var(--blue)">—</span>
+    </div>
+    <div class="kpi-s" id="ks-op">
+      <span class="kpi-s-lbl">영업이익</span>
+      <span class="kpi-s-val" id="ks-op-v">—</span>
+    </div>
+    <div class="kpi-s" id="ks-mg">
+      <span class="kpi-s-lbl">이익률</span>
+      <span class="kpi-s-val" id="ks-mg-v">—</span>
+    </div>
+    <div class="kpi-s" id="ks-dt" style="border-left:1px solid var(--border);padding-left:14px">
+      <span class="kpi-s-lbl">총 변동비</span>
+      <span class="kpi-s-val" id="ks-dt-v" style="color:var(--red)">—</span>
+    </div>
+  </div>
   <div id="main">
     <div id="left"></div>
     <div id="right"></div>
@@ -804,10 +902,11 @@ body.readonly .icon-btn{pointer-events:none;opacity:.4}
 
   <!-- ── 좌측 하단 고정 변경 적용 버튼 ── -->
   <div id="confirm-bar" style="
-    position:fixed;bottom:0;left:0;width:40%;
+    position:fixed;bottom:0;left:0;width:40%;max-width:40%;
     background:var(--card);border-top:2px solid var(--border);
     padding:10px 14px;z-index:100;display:block;
     box-shadow:0 -4px 16px rgba(0,0,0,.08);
+    box-sizing:border-box;
   ">
     <button id="btn-confirm-bar" onclick="doConfirm()" style="
       width:100%;padding:11px;font-size:13px;font-weight:700;
@@ -869,19 +968,33 @@ const ROLES=[
   {id:'dev',   label:'개발',   color:'#185FA5'},
 ];
 const GCOLS={S:'#A32D2D',A:'#854F0B',B:'#185FA5',C:'#3B6D11'};
+
+/* ── tooltip helper ── */
+function tip(text){
+  return `<span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">${text}</span></span>`;
+}
 const OCATS=[{id:'contents',label:'콘텐츠',color:'#534AB7'},{id:'hardware',label:'하드웨어',color:'#185FA5'},{id:'interior',label:'인테리어',color:'#0F6E56'},{id:'construct',label:'건축/시공',color:'#993C1D'},{id:'direct',label:'직접경비',color:'#854F0B'}];
 const SC_DEF=[{key:'worst',label:'Worst',color:'#A32D2D'},{key:'avg',label:'Average',color:'#854F0B'},{key:'best',label:'Best',color:'#3B6D11'}];
 const DAILY_DEF={S:568663,A:427566,B:336666,C:302999};
 const PNL_DEFS=[
-  {label:'투찰금액 (VAT포함)',key:'ct',indent:false,bold:false},
-  {label:'공급가액 (매출)',key:'rv',indent:false,bold:true},
-  {label:'(-) 인건비',key:'lc',indent:true,neg:true},
-  {label:'(-) 외주비 공급가액',key:'os',indent:true,neg:true},
-  {label:'(-) 서버/직접경비',key:'svc',indent:true,neg:true},
-  {label:'공헌이익',key:'cn',indent:false,bold:true,sep:true},
-  {label:'(-) 간접비',key:'ic',indent:true,neg:true},
-  {label:'영업이익',key:'op',indent:false,bold:true,sep:true,accent:true},
-  {label:'영업이익률',key:'mg',indent:false,bold:true,sep:true,pct:true},
+  {label:'투찰금액 (VAT포함)', key:'ct', indent:false, bold:false,
+   tip:'기초금액 × 투찰율. 발주기관에 제출하는 입찰가격(VAT 포함).'},
+  {label:'공급가액 (매출)',     key:'rv', indent:false, bold:true,
+   tip:'투찰금액 ÷ 1.1. 부가세 제외 실제 매출액. 손익 계산의 기준이 됩니다.'},
+  {label:'(-) 인건비',         key:'lc', indent:true,  neg:true,
+   tip:'투입 인력 M/M × 등급별 단가 합계. d&#39;strict 2026년 내부 노임단가 기준.'},
+  {label:'(-) 외주비 공급가액',key:'os', indent:true,  neg:true,
+   tip:'외주 업체에 지급하는 콘텐츠·하드웨어·인테리어·건축 등 비용의 VAT 제외 공급가액 합계.'},
+  {label:'(-) 서버/직접경비',  key:'svc', indent:true, neg:true,
+   tip:'서버 운영비, 유지관리비 등 고정비와 직접경비(카테고리: 직접경비) 항목의 합계.'},
+  {label:'공헌이익',           key:'cn', indent:false, bold:true, sep:true,
+   tip:'공급가액 − 인건비 − 외주비 − 서버/직접경비. 고정비(간접비) 충당 전 남는 이익. 이 값이 양수여야 손익분기 가능.'},
+  {label:'(-) 간접비',         key:'ic', indent:true,  neg:true,
+   tip:'공급가액 × 간접비율. 영업비·일반관리비·공통 인프라 등 사업 운영에 필요한 고정비 배부액.'},
+  {label:'영업이익',           key:'op', indent:false, bold:true, sep:true, accent:true,
+   tip:'공헌이익 − 간접비. 최종 사업 수익성 지표. 양수면 이익, 음수면 손실. 목표 이익률 10% 이상 권장.'},
+  {label:'영업이익률',         key:'mg', indent:false, bold:true, sep:true, pct:true,
+   tip:'영업이익 ÷ 공급가액 × 100(%). d&#39;strict 내부 기준: 10% 이상 ✅ 목표 달성 / 0~10% ⚠️ 주의 / 0% 미만 ❌ 적자.'},
 ];
 
 /* ============================================================
@@ -992,7 +1105,7 @@ const S={
   minBid: lsGet('b2g4_minBid', 70),
   outsMemo: lsGet('b2g4_outsMemo',''),
 };
-const UI={pOpen:false,tab:'dashboard',detId:null,_uid:400};
+const UI={pOpen:false,tab:'dashboard',detId:null,_uid:400,acOpen:{order:true,labor:true,outs:true,indr:true}};
 // uid 충돌 방지: 로드된 데이터의 최대 id로 초기화
 (function(){const ids=[...lsGet('b2g4_labor',[]),...lsGet('b2g4_outs',[])].map(r=>Number(r.id)||0);if(ids.length)UI._uid=Math.max(UI._uid,...ids);})()
 function uid(){return ++UI._uid;}
@@ -1162,6 +1275,7 @@ function doConfirmProceed(){
 
   // 3) 오버레이 제거 + 우측 전체 갱신
   removePendingOverlay();
+  updateStickyKPI();
   // 대기화면→결과화면 전환 (BASELINE이 설정됐으므로 buildRight가 결과 표시)
   const wasWaiting=!!document.getElementById('right-waiting');
   if(wasWaiting){
@@ -1305,6 +1419,18 @@ function onScenarioChange(){showPendingOverlay();markDirty();}
 function onCostChange(){
   showPendingOverlay();markDirty();
   autoSetScenarios();
+  // 스티키 KPI는 항상 실시간 갱신 (BASELINE 없어도)
+  const r=compute(S.bid);
+  const bar=document.getElementById('kpi-sticky');
+  if(bar&&BASELINE){
+    bar.style.display='flex';
+    const mgC=r.mg>=10?'var(--kpi-green)':r.mg>=0?'var(--kpi-yellow)':'var(--kpi-red)';
+    const opC=r.op>=0?'var(--kpi-green)':'var(--kpi-red)';
+    function sv(id,val,col){const el=document.getElementById(id);if(el){el.textContent=val;if(col)el.style.color=col;}}
+    sv('ks-bid-v',fmtW(r.ct));sv('ks-rv-v',fmtW(r.rv),'var(--blue)');
+    sv('ks-op-v',fmtW(r.op),opC);sv('ks-mg-v',r.mg.toFixed(2)+'%',mgC);
+    sv('ks-dt-v',fmtW(r.dt),'var(--red)');
+  }
 }
 function onParamChange(){updateGradeCards();onCostChange();}
 
@@ -1366,7 +1492,7 @@ function buildLeft(){
   const res=compute(S.bid);
   el.innerHTML=`
     <div class="sc">
-      <div class="sc-head"><span class="sc-title">발주 정보</span></div>
+      <div class="sc-head clickable" onclick="toggleAcc('order')" style="display:flex;align-items:center;justify-content:space-between"><span class="sc-title">발주 정보</span><span id="acc-arr-order" style="font-size:11px;color:var(--hint)">${UI.acOpen.order?'▲':'▼'}</span></div>
       <div class="sc-body">
         <div style="margin-bottom:13px">
           <label class="lbl" for="inp_project">프로젝트명</label>
@@ -1406,7 +1532,7 @@ function buildLeft(){
     <div class="sc" id="param_card">
       <div class="param-head" id="param_head">
         <div style="display:flex;align-items:center;gap:8px">
-          <span class="sc-title" style="margin:0">노임단가</span>
+          <span class="sc-title" style="margin:0">노임단가 ${tip('d&#39;strict 2026년 내부 노임단가 기준. 특급 3,511만원 · 고급 2,640만원 · 중급 2,079만원 · 초급 1,871만원 (M/M). 직접인건비 × (1+제경비율) × (1+기술료율) 산출')}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <span id="param_summary" style="font-size:11px;color:var(--hint);letter-spacing:0.2px">제경비 ${S.oh}% · 기술료 ${S.tr}%</span>
@@ -1441,13 +1567,15 @@ function buildLeft(){
     </div>
 
     <div class="sc">
-      <div class="sc-head">
-        <span class="sc-title">투입 인력</span>
+      <div class="sc-head clickable" onclick="toggleAcc('labor')" style="display:flex;align-items:center;justify-content:space-between">
+        <span class="sc-title" style="display:flex;align-items:center;gap:3px">투입 인력 ${tip('등급별 M/M(man-month) × 인원 × 투입월수. 특급·고급·중급·초급 등급은 KOSA 기준 자격요건을 따릅니다.')}</span>
         <div style="display:flex;align-items:center;gap:9px">
           <span id="lbl_labor" style="font-size:13px;color:var(--red);font-weight:700;letter-spacing:-0.3px">${fmtW(res.lc)}</span>
           <button class="btn-cta" id="btn_add_labor" style="padding:4px 11px;font-size:11px">+ 추가</button>
+          <span id="acc-arr-labor" style="font-size:11px;color:var(--hint)">${UI.acOpen.labor?'▲':'▼'}</span>
         </div>
       </div>
+      <div id="acc-body-labor" style="display:${UI.acOpen.labor?'block':'none'}">
       <div class="sc-body">
         <div class="labor-grid" style="padding:3px 3px 6px;border-bottom:1px solid var(--border);margin-bottom:4px">
           <span style="font-size:11px;color:var(--muted);letter-spacing:0.2px">직무</span>
@@ -1469,16 +1597,19 @@ function buildLeft(){
             oninput="S.memo=this.value;saveKey('memo')">${S.memo||''}</textarea>
         </div>
       </div>
+      </div><!-- /acc-body-labor -->
     </div>
 
     <div class="sc">
-      <div class="sc-head">
-        <span class="sc-title">외주비 / 직접경비</span>
+      <div class="sc-head clickable" onclick="toggleAcc('outs')" style="display:flex;align-items:center;justify-content:space-between">
+        <span class="sc-title" style="display:flex;align-items:center;gap:3px">외주비 / 직접경비 ${tip('외주 용역비, 콘텐츠·하드웨어·인테리어 등 직접 지출 비용. 직접경비는 서버/기타와 함께 손익계산서 서버/직접경비 항목에 반영됩니다.')}</span>
         <div style="display:flex;align-items:center;gap:9px">
           <span id="lbl_outs" style="font-size:13px;color:var(--purple);font-weight:700;letter-spacing:-0.3px">공급가액 ${fmtW(res.os)}</span>
           <button class="btn-cta" id="btn_add_outs" style="padding:4px 11px;font-size:11px;background:var(--purple);border-color:var(--purple)">+ 추가</button>
+          <span id="acc-arr-outs" style="font-size:11px;color:var(--hint)">${UI.acOpen.outs?'▲':'▼'}</span>
         </div>
       </div>
+      <div id="acc-body-outs" style="display:${UI.acOpen.outs?'block':'none'}">
       <div class="sc-body">
         <div id="outs_list">${buildOutsHTML()}</div>
         <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
@@ -1492,16 +1623,13 @@ function buildLeft(){
             oninput="S.outsMemo=this.value;saveKey('outsMemo')">${S.outsMemo||''}</textarea>
         </div>
       </div>
-    </div>
+      </div><!-- /acc-body-outs -->
 
     <div class="sc">
-      <div class="sc-head"><span class="sc-title">간접비율</span></div>
+      <div class="sc-head clickable" onclick="toggleAcc('indr')" style="display:flex;align-items:center;justify-content:space-between"><span class="sc-title" style="display:flex;align-items:center;gap:3px">간접비율 ${tip('공헌이익에서 차감되는 사업 간접비. 영업비, 일반관리비 등 고정비 충당 비율. 통상 5~15% 적용.')}</span><span id="acc-arr-indr" style="font-size:11px;color:var(--hint)">${UI.acOpen.indr?'▲':'▼'}</span></div>
       <div class="sc-body">
         ${makeDualHTML({id:'indr',label:'사업 간접비율',value:S.indr,min:0,max:30,step:1,dec:0,hint:'순매출액 대비',color:'#0F6E56'})}
-        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-          <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px">서버 / 기타 고정비 <span style="font-weight:400;color:var(--hint)">(VAT 별도, 직접경비 합산)</span></div>
-          ${makeMoneyInputHTML({id:'inp_svc',value:S.svc||0,label:'',hint:''})}
-        </div>
+
       </div>
     </div>
 
@@ -1513,6 +1641,14 @@ function buildLeft(){
   bindLeftEvents();
 }
 
+
+function toggleAcc(key){
+  UI.acOpen[key]=!UI.acOpen[key];
+  const body=document.getElementById('acc-body-'+key);
+  const arr=document.getElementById('acc-arr-'+key);
+  if(body)body.style.display=UI.acOpen[key]?'block':'none';
+  if(arr)arr.textContent=UI.acOpen[key]?'▲':'▼';
+}
 function buildGradeCardsHTML(mms){
   if(!mms)mms=getMMs();
   return['S','A','B','C'].map(k=>`
@@ -1729,24 +1865,25 @@ function buildRight(){
 
 function buildKPIHTML(res){
   return`
-    <div class="kpi"><div class="kpi-label">투찰금액(VAT포함)</div><div class="kpi-value">${fmtW(res.ct)}</div><div class="kpi-sub">투찰율 ${S.bid.toFixed(2)}%</div></div>
-    <div class="kpi" style="background:var(--blue-bg);border-color:#b5d4f4"><div class="kpi-label">공급가액(매출)</div><div class="kpi-value" style="color:var(--blue)">${fmtW(res.rv)}</div><div class="kpi-sub">VAT 제외</div></div>
-    <div class="kpi" style="background:var(--red-bg);border-color:#f5b7b7"><div class="kpi-label">총 변동비</div><div class="kpi-value" style="color:var(--red)">${fmtW(res.dt)}</div></div>
-    <div class="kpi" style="background:${mbg(res.mg)};border-color:${mbdr(res.mg)}"><div class="kpi-label">영업이익</div><div class="kpi-value" style="color:${mcol(res.mg)}">${fmtW(res.op)}</div></div>
+    <div class="kpi"><div class="kpi-label" style="display:flex;align-items:center;gap:3px">투찰금액(VAT포함)${tip('기초금액 × 투찰율. 발주기관에 제출하는 최종 입찰가격(VAT 포함).')}</div><div class="kpi-value">${fmtW(res.ct)}</div><div class="kpi-sub">투찰율 ${S.bid.toFixed(2)}%</div></div>
+    <div class="kpi" style="background:var(--blue-bg);border-color:#b5d4f4"><div class="kpi-label" style="display:flex;align-items:center;gap:3px">공급가액(매출)${tip('투찰금액 ÷ 1.1. 부가세 제외 실제 매출액.')}</div><div class="kpi-value" style="color:var(--blue)">${fmtW(res.rv)}</div><div class="kpi-sub">VAT 제외</div></div>
+    <div class="kpi" style="background:var(--red-bg);border-color:#f5b7b7"><div class="kpi-label" style="display:flex;align-items:center;gap:3px">총 변동비${tip('인건비 + 외주비 + 서버/직접경비의 합. 매출에서 이 비용을 뺀 값이 공헌이익입니다.')}</div><div class="kpi-value" style="color:var(--red)">${fmtW(res.dt)}</div></div>
+    <div class="kpi" style="background:${mbg(res.mg)};border-color:${mbdr(res.mg)}"><div class="kpi-label" style="display:flex;align-items:center;gap:3px">영업이익${tip('공헌이익 − 간접비. 최종 수익성 지표. 목표: 공급가액의 10% 이상 권장.')}</div><div class="kpi-value" style="color:${mcol(res.mg)}">${fmtW(res.op)}</div></div>
     <div class="kpi" style="background:${mbg(res.mg)};border-color:${mbdr(res.mg)}">
       <div class="kpi-label">영업이익률</div>
       <div class="kpi-value" style="font-size:20px;font-weight:700;color:${mcol(res.mg)};letter-spacing:-0.5px">${res.mg.toFixed(2)}%</div>
       <div class="kpi-sub" style="color:${mcol(res.mg)}">${res.mg>=10?'✓ 목표 달성':res.mg>=0?'△ 마진 주의':'✕ 적자'}</div>
     </div>`;
 }
-function updateKPIs(){setHTML('kpi_grid',buildKPIHTML(compute(S.bid)));}
+function updateKPIs(){setHTML('kpi_grid',buildKPIHTML(compute(S.bid)));updateStickyKPI();}
 
 function buildPnLHTML(res){
   return PNL_DEFS.map(row=>{
     let v=row.key==='mg'?res.mg:row.neg?-res[row.key]:res[row.key];
     const col=row.pct?mcol(res.mg):row.accent?(res.op>=0?'var(--kpi-green)':'var(--kpi-red)'):(v<0?'var(--red)':'var(--text)');
+    const tipHtml=row.tip?tip(row.tip):'';
     return`<div class="pnl-row ${row.sep?'sep':''} ${row.indent?'pnl-indent':''}">
-      <span style="font-weight:${row.bold?600:300};color:${row.bold?'var(--text)':'var(--muted)'};font-size:${row.bold?'14px':'12px'};letter-spacing:${row.bold?'-0.3px':'0.2px'}">${row.label}${row.key==='ic'?` (${S.indr}%)`:''}:</span>
+      <span style="display:flex;align-items:center;gap:3px;font-weight:${row.bold?600:300};color:${row.bold?'var(--text)':'var(--muted)'};font-size:${row.bold?'14px':'12px'};letter-spacing:${row.bold?'-0.3px':'0.2px'}">${row.label}${row.key==='ic'?` (${S.indr}%)`:''}:${tipHtml}</span>
       <span style="font-weight:600;color:${col};font-size:${row.bold?'14px':'12px'};letter-spacing:-0.3px">${row.pct?res.mg.toFixed(2)+'%':fmtF(v)}</span>
     </div>`;
   }).join('');
@@ -1890,6 +2027,21 @@ function buildAuditHTML(res){
   </div>`;
 }
 
+
+function updateStickyKPI(){
+  if(!BASELINE)return;
+  const r=compute(S.bid);
+  const bar=document.getElementById('kpi-sticky');
+  if(bar)bar.style.display='flex';
+  const mgColor=r.mg>=10?'var(--kpi-green)':r.mg>=0?'var(--kpi-yellow)':'var(--kpi-red)';
+  const opColor=r.op>=0?'var(--kpi-green)':'var(--kpi-red)';
+  function s(id,val,col){const el=document.getElementById(id);if(el){el.textContent=val;if(col)el.style.color=col;}}
+  s('ks-bid-v', fmtW(r.ct));
+  s('ks-rv-v',  fmtW(r.rv), 'var(--blue)');
+  s('ks-op-v',  fmtW(r.op), opColor);
+  s('ks-mg-v',  r.mg.toFixed(2)+'%', mgColor);
+  s('ks-dt-v',  fmtW(r.dt), 'var(--red)');
+}
 function renderRightFull(){
   const res=compute(S.bid),scr={minBid:compute(S.minBid||70),cur:res};
   setHTML('tab_content',buildTabHTML(res,scr));
@@ -1983,7 +2135,7 @@ function buildExcel(){
   const N=v=>typeof v==='number'?v.toLocaleString('ko-KR'):'';
   const P=v=>typeof v==='number'?v.toFixed(2)+'%':'';
   const rows=[];
-  rows.push(["d'strict B2G Simulator Vol.1.2","","생성:",new Date().toLocaleString('ko-KR')]);
+  rows.push(["d'strict B2G Simulator Vol.1.2.1","","생성:",new Date().toLocaleString('ko-KR')]);
   rows.push(["프로젝트명",S.projectName||"(미입력)"]);
   rows.push([]);
   rows.push(["[투찰 정보]"]);
@@ -2025,7 +2177,7 @@ function buildWordReport(){
   const sep='='.repeat(50);
   const lines=[
     sep,
-    "  d'strict B2G Simulator Vol.1.2",
+    "  d'strict B2G Simulator Vol.1.2.1",
     "  공공사업 예산 분석 보고서",
     sep,
     "프로젝트명: "+(S.projectName||"(미입력)"),
@@ -2065,7 +2217,7 @@ function buildWordReport(){
     "",
     sep,
     "d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭",
-    "d'strict B2G Simulator Vol.1.2",
+    "d'strict B2G Simulator Vol.1.2.1",
     sep,
   ];
   return '﻿'+lines.join('\r\n');
@@ -2074,7 +2226,7 @@ function buildWordReport(){
 function buildPPTNotes(){
   const r=compute(S.bid),mms=getMMs();
   const lines=[
-    "━━━ PPT 발표 노트 — d'strict B2G Simulator Vol.1.2 ━━━",
+    "━━━ PPT 발표 노트 — d'strict B2G Simulator Vol.1.2.1 ━━━",
     "",
     "【슬라이드 1: 프로젝트 개요】",
     "- 프로젝트명: "+(S.projectName||"(미입력)"),
@@ -2103,7 +2255,7 @@ function buildPPTNotes(){
     "- 현재 투찰율 "+S.bid.toFixed(2)+"%: 영업이익 "+fmtW(r.op)+" / 이익률 "+r.mg.toFixed(2)+"%",
     "",
     ...(S.memo?["【슬라이드 6: 특이사항】",S.memo,""]:[]),
-    "━━━ d'strict 2026년 노임단가 기준 · d'strict B2G Simulator Vol.1.2 ━━━",
+    "━━━ d'strict 2026년 노임단가 기준 · d'strict B2G Simulator Vol.1.2.1 ━━━",
   ];
   return '﻿'+lines.join('\r\n');
 }
@@ -2583,6 +2735,8 @@ function renderProjectCompare(){
 let CURRENT_PAGE = 'simulator';
 
 function switchPage(page){
+  const ks=document.getElementById('kpi-sticky');
+  if(ks)ks.style.display=(page==='simulator'&&BASELINE)?'flex':'none';
   CURRENT_PAGE = page;
   // 페이지 표시/숨김
   const pages = {
@@ -2870,7 +3024,7 @@ function exportCompareXLSX(){
   const acct=v=>typeof v==='number'?v.toLocaleString('ko-KR'):'';
   const pct=v=>typeof v==='number'?v.toFixed(2)+'%':'';
   const rows=[];
-  rows.push(["d'strict B2G Simulator Vol.1.2 — 프로젝트 비교 분석","","","생성:",new Date().toLocaleString('ko-KR')]);
+  rows.push(["d'strict B2G Simulator Vol.1.2.1 — 프로젝트 비교 분석","","","생성:",new Date().toLocaleString('ko-KR')]);
   rows.push(["선택 프로젝트",...projects.map(p=>p.name)]);
   rows.push(["분석 일시",...projects.map(p=>p.ts)]);
   rows.push([]);
@@ -2934,7 +3088,7 @@ function captureSnapshot(fmt){
   // 헤더 바
   ctx.fillStyle='#1a1a18';roundRect(ctx,20,20,W-40,52,{tl:12,tr:12,bl:0,br:0});ctx.fill();
   ctx.fillStyle='#fff';ctx.font='700 15px "Pretendard Variable",Arial,sans-serif';
-  ctx.fillText("d'strict B2G Simulator Vol.1.2",40,52);
+  ctx.fillText("d'strict B2G Simulator Vol.1.2.1",40,52);
   ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='400 11px Arial';
   ctx.fillText(S.projectName||'프로젝트',40,68);
   ctx.fillText(new Date().toLocaleDateString('ko-KR'),W-120,52);
@@ -3150,6 +3304,49 @@ function bindActionBar(){
     BASELINE=null;
     document.getElementById('confirm-time').textContent='';
     switchPage('simulator');
+  }
+})();
+
+/* ── 툴팁 위치 동적 계산 (화면 밖 방지) ── */
+document.addEventListener('mouseover',function(e){
+  const wrap=e.target.closest('.tip-wrap');
+  if(!wrap)return;
+  const box=wrap.querySelector('.tip-box');
+  if(!box)return;
+  box.style.display='block';
+  const iconRect=wrap.getBoundingClientRect();
+  const bW=box.offsetWidth||240,bH=box.offsetHeight||80;
+  const vW=window.innerWidth,vH=window.innerHeight;
+  // 기본: 아이콘 위
+  let top=iconRect.top-bH-8;
+  let left=iconRect.left+iconRect.width/2-16; // 화살표 기준 left:16px
+  // 화면 위로 벗어나면 → 아래에 표시
+  if(top<8){top=iconRect.bottom+8;box.style.setProperty('--arr-top','auto');box.style.setProperty('--arr-bot','-10px');}
+  else{box.style.setProperty('--arr-top','100%');box.style.setProperty('--arr-bot','auto');}
+  // 오른쪽 벗어남
+  if(left+bW>vW-8)left=vW-bW-8;
+  // 왼쪽 벗어남
+  if(left<8)left=8;
+  box.style.top=top+'px';
+  box.style.left=left+'px';
+},true);
+document.addEventListener('mouseout',function(e){
+  const wrap=e.target.closest('.tip-wrap');
+  if(!wrap)return;
+  if(!wrap.contains(e.relatedTarget)){
+    const box=wrap.querySelector('.tip-box');
+    if(box)box.style.display='none';
+  }
+},true);
+
+/* ── left 스크롤 → kpi-sticky shadow ── */
+(function(){
+  const leftEl=document.getElementById('left');
+  const ksEl=document.getElementById('kpi-sticky');
+  if(leftEl&&ksEl){
+    leftEl.addEventListener('scroll',()=>{
+      ksEl.classList.toggle('scrolled',leftEl.scrollTop>10);
+    });
   }
 })();
 </script>
