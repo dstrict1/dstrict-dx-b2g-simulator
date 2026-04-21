@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>d'strict B2G Simulator Vol.1.2.1</title>
-<meta property="og:title" content="d'strict B2G Simulator Vol.1.2.1">
+<title>d'strict B2G Simulator Vol.1.3</title>
+<meta property="og:title" content="d'strict B2G Simulator Vol.1.3">
 <meta property="og:url" content="https://shin3164.github.io/dstrict-dx-b2g-simulator/">
 <meta property="og:description" content="d'strict B2G 전략 예산 시뮬레이터 — 공공사업 투찰율·손익 분석 도구">
 <style>
@@ -546,7 +546,7 @@ body.readonly .icon-btn{pointer-events:none;opacity:.4}
 /* ── 외주비 항목 행 정렬 ── */
 .outs-row-inner{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 
-/* ── UX 개선 Vol.1.2.1 ── */
+/* ── UX 개선 Vol.1.3 ── */
 
 /* 좌측 스크롤 시 결과 고정 */
 #left{scroll-behavior:smooth}
@@ -633,7 +633,7 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
       <div class="tb-logo-mark">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
       </div>
-      <span class="tb-name">d'strict B2G Simulator <span style='font-size:10px;font-weight:400;opacity:.7'>Vol.1.2.1</span></span>
+      <span class="tb-name">d'strict B2G Simulator <span style='font-size:10px;font-weight:400;opacity:.7'>Vol.1.3</span></span>
     </div>
     <!-- 네비게이션 메뉴 -->
     <div id="tb-nav" style="display:flex;align-items:center;gap:2px;margin-left:12px">
@@ -652,7 +652,7 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
   <!-- VAT Banner -->
   <div id="vat-banner">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-    모든 수익 분석은 부가세를 제외한 공급가액 기준으로 산출됩니다.
+    모든 수익 분석은 부가세 별도 공급가액 기준으로 산출됩니다.
   </div>
 
   <!-- Action Bar -->
@@ -691,7 +691,7 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
         <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;background:var(--purple);margin-bottom:14px">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
         </div>
-        <h1 style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:6px">d'strict B2G Simulator Vol.1.2.1</h1>
+        <h1 style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:6px">d'strict B2G Simulator Vol.1.3</h1>
         <p style="font-size:13px;color:var(--muted);letter-spacing:0.2px">2026 KOSA 노임단가 기준 · SW사업 대가산정 가이드(2025 개정판)</p>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="home-menu-grid">
@@ -744,19 +744,19 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
       <span class="kpi-s-val" id="ks-bid-v">—</span>
     </div>
     <div class="kpi-s" id="ks-rv">
-      <span class="kpi-s-lbl">공급가액(매출)</span>
+      <span class="kpi-s-lbl">매출액(VAT별도)</span>
       <span class="kpi-s-val" id="ks-rv-v" style="color:var(--blue)">—</span>
     </div>
     <div class="kpi-s" id="ks-op">
-      <span class="kpi-s-lbl">영업이익</span>
+      <span class="kpi-s-lbl">공헌이익</span>
       <span class="kpi-s-val" id="ks-op-v">—</span>
     </div>
     <div class="kpi-s" id="ks-mg">
-      <span class="kpi-s-lbl">이익률</span>
+      <span class="kpi-s-lbl">공헌이익률</span>
       <span class="kpi-s-val" id="ks-mg-v">—</span>
     </div>
     <div class="kpi-s" id="ks-dt" style="border-left:1px solid var(--border);padding-left:14px">
-      <span class="kpi-s-lbl">총 변동비</span>
+      <span class="kpi-s-lbl">직접비+직접경비</span>
       <span class="kpi-s-val" id="ks-dt-v" style="color:var(--red)">—</span>
     </div>
   </div>
@@ -973,31 +973,30 @@ const GCOLS={S:'#A32D2D',A:'#854F0B',B:'#185FA5',C:'#3B6D11'};
 function tip(text){
   return `<span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">${text}</span></span>`;
 }
-const OCATS=[{id:'contents',label:'콘텐츠',color:'#534AB7'},{id:'hardware',label:'하드웨어',color:'#185FA5'},{id:'interior',label:'인테리어',color:'#0F6E56'},{id:'construct',label:'건축/시공',color:'#993C1D'},{id:'system',label:'시스템',color:'#0F6E8A'},{id:'dev',label:'개발',color:'#6B3FA0'},{id:'direct',label:'직접경비',color:'#854F0B'}];
+const OCATS=[{id:'contents',label:'콘텐츠',color:'#534AB7'},{id:'hardware',label:'하드웨어',color:'#185FA5'},{id:'interior',label:'인테리어',color:'#0F6E56'},{id:'construct',label:'건축/시공',color:'#993C1D'},{id:'system',label:'시스템',color:'#0F6E8A'},{id:'dev',label:'개발',color:'#6B3FA0'},{id:'opex',label:'운영경비',color:'#E67E22'}];
+const OPEX_CATS=[{id:'travel',label:'여비교통비',color:'#185FA5'},{id:'meal',label:'식대/간식/회식',color:'#E67E22'},{id:'entertain',label:'접대비',color:'#993C1D'},{id:'supply',label:'소모품/비품',color:'#0F6E56'},{id:'etc_direct',label:'기타직접비',color:'#73726c'}];
 const SC_DEF=[{key:'worst',label:'Worst',color:'#A32D2D'},{key:'avg',label:'Average',color:'#854F0B'},{key:'best',label:'Best',color:'#3B6D11'}];
 const DAILY_DEF={S:568663,A:427566,B:336666,C:302999};
 const PNL_DEFS=[
-  {label:'투찰금액 (VAT포함)', key:'ct', indent:false, bold:false,
-   tip:'기초금액 × 투찰율. 발주기관에 제출하는 입찰가격(VAT 포함).'},
-  {label:'공급가액 (매출)',     key:'rv', indent:false, bold:true,
-   tip:'투찰금액 ÷ 1.1. 부가세 제외 실제 매출액. 손익 계산의 기준이 됩니다.'},
-  {label:'(-) 인건비',         key:'lc', indent:true,  neg:true,
-   tip:'투입 인력 M/M × 등급별 단가 합계. d&#39;strict 2026년 내부 노임단가 기준.'},
-  {label:'(-) 외주비 공급가액',key:'os', indent:true,  neg:true,
-   tip:'외주 업체에 지급하는 콘텐츠·하드웨어·인테리어·건축 등 비용의 VAT 제외 공급가액 합계.'},
-  {label:'(-) 서버/직접경비',  key:'svc', indent:true, neg:true,
-   tip:'서버 운영비, 유지관리비 등 고정비와 직접경비(카테고리: 직접경비) 항목의 합계.'},
-  {label:'공헌이익',           key:'cn', indent:false, bold:true, sep:true,
-   tip:'공급가액 − 인건비 − 외주비 − 서버/직접경비. 고정비(간접비) 충당 전 남는 이익. 이 값이 양수여야 손익분기 가능.'},
-  {label:'(-) 간접비',         key:'ic', indent:true,  neg:true,
-   tip:'공급가액 × 간접비율. 영업비·일반관리비·공통 인프라 등 사업 운영에 필요한 고정비 배부액.'},
-  {label:'영업이익',           key:'op', indent:false, bold:true, sep:true, accent:true,
-   tip:'공헌이익 − 간접비. 최종 사업 수익성 지표. 양수면 이익, 음수면 손실. 목표 이익률 10% 이상 권장.'},
-  {label:'영업이익률',         key:'mg', indent:false, bold:true, sep:true, pct:true,
-   tip:'영업이익 ÷ 공급가액 × 100(%). d&#39;strict 내부 기준: 10% 이상 ✅ 목표 달성 / 0~10% ⚠️ 주의 / 0% 미만 ❌ 적자.'},
-];
-
-/* ============================================================
+  {label:'투찰금액 (VAT포함)', key:'ct',  indent:false, bold:false,
+   tip:'기초금액 × 투찰율. 발주기관에 제출하는 최종 입찰가격(VAT 포함).'},
+  {label:'매출액 (VAT별도)',   key:'rv',  indent:false, bold:true,
+   tip:'투찰금액 ÷ 1.1. 부가세 별도 실제 매출액. 공헌이익 계산의 기준.'},
+  {label:'(-) 직접비',         key:'os',  indent:true,  neg:true,
+   tip:'외주 업체에 지급하는 콘텐츠·하드웨어·인테리어·시스템·개발 등 VAT별도 금액.'},
+  {label:'(-) 직접경비',       key:'svc', indent:true,  neg:true,
+   tip:'서버 운영비, 유지관리비 등 사업에 직접 투입되는 경비.'},
+  {label:'공헌이익',           key:'cn',  indent:false, bold:true, sep:true, accent:true,
+   tip:'매출액 − 직접비 − 직접경비. d&#39;strict의 핵심 수익성 지표.'},
+  {label:'공헌이익률',         key:'cnr', indent:false, bold:true, pct:true,
+   tip:'공헌이익 ÷ 매출액 × 100(%). 높을수록 수익성이 우수.'},
+  {label:'(+) 인건비',         key:'lc',  indent:true,  bold:false, addBack:true,
+   tip:'내부 투입 인건비. 공헌이익에 합산하여 매출총이익을 산출합니다.'},
+  {label:'매출총이익',         key:'gp',  indent:false, bold:true, sep:true,
+   tip:'공헌이익 + 인건비. 직접비와 직접경비만 차감한 총이익.'},
+  {label:'매출총이익률',       key:'gpr', indent:false, bold:true, pct:true,
+   tip:'매출총이익 ÷ 매출액 × 100(%).'}
+];/* ============================================================
    AUTH
 ============================================================ */
 let CURRENT_USER=null;
@@ -1035,10 +1034,17 @@ function doLogout(){
 function normalizeOutsData(){
   const validCatIds=OCATS.map(c=>c.id);
   S.labor=S.labor.map(r=>({...r,id:uid()}));
+  S.opex=(S.opex||[]).map(r=>({
+    ...r,
+    id:uid(),
+    catId:OPEX_CATS.find(c=>c.id===r.catId)?r.catId:'travel',
+    amount:Math.max(0,parseFloat(r.amount)||0),
+    vatIncl:!!r.vatIncl,
+  }));
   S.outs=S.outs.map(r=>({
     ...r,
     id:uid(),
-    catId:validCatIds.includes(r.catId)?r.catId:'contents',
+    catId:validCatIds.includes(r.catId)?r.catId:'contents',  // direct는 contents로 자동 전환
     amount:Math.max(0,parseFloat(r.amount)||0),
     vatIncl:!!r.vatIncl,
   }));
@@ -1111,6 +1117,7 @@ const S={
   gd:   lsGet('b2g4_gd',  {S:568663,A:427566,B:336666,C:302999}),
   labor:lsGet('b2g4_labor',[{id:1,grade:'A',role:'dev',count:3,mm:6.0},{id:2,grade:'S',role:'pm',count:1,mm:6.0},{id:3,grade:'B',role:'plan',count:2,mm:4.0}]),
   outs: lsGet('b2g4_outs', []),
+  opex: lsGet('b2g4_opex', []),
   svc:  lsGet('b2g4_svc',  0),
   indr: lsGet('b2g4_indr', 10),
   sc:   lsGet('b2g4_sc',   {worst:85,avg:90,best:95}),
@@ -1120,12 +1127,12 @@ const S={
   minBid: lsGet('b2g4_minBid', 70),
   outsMemo: lsGet('b2g4_outsMemo',''),
 };
-const UI={pOpen:false,tab:'dashboard',detId:null,_uid:400,acOpen:{order:true,labor:true,outs:true,indr:true}};
+const UI={pOpen:false,tab:'dashboard',detId:null,_uid:400,acOpen:{order:true,labor:true,outs:true,opex:false,indr:true}};
 // uid 충돌 방지: 로드된 데이터의 최대 id로 초기화
 (function(){const ids=[...lsGet('b2g4_labor',[]),...lsGet('b2g4_outs',[])].map(r=>Number(r.id)||0);if(ids.length)UI._uid=Math.max(UI._uid,...ids);})()
 function uid(){return ++UI._uid;}
 function saveKey(k){lsSet('b2g4_'+k,S[k]);}
-function saveAll(){['base','bid','oh','tr','wd','gd','labor','outs','svc','indr','sc','memo','minBid','projectName','outsMemo'].forEach(saveKey);}
+function saveAll(){['base','bid','oh','tr','wd','gd','labor','outs','opex','svc','indr','sc','memo','minBid','projectName','outsMemo'].forEach(saveKey);}
 
 /* ============================================================
    HELPERS
@@ -1163,16 +1170,23 @@ function compute(rate){
   const rv=S.baseVatIncl!==false?fl(ct/1.1):ct;
   const mms=getMMs();
   let lc=0;S.labor.forEach(r=>lc+=fl(mms[r.grade].mm*r.count*r.mm));
-  let os=0,svcTotal=0;
+  let os=0;
   S.outs.forEach(r=>{
     const v=parseFloat(r.amount)||0;
     const sup=r.vatIncl?fl(v/1.1):v;
-    if(r.catId==='direct') svcTotal+=sup;
-    else os+=sup;
+    os+=sup;
   });
-  const svc=svcTotal+(S.svc||0);
-  const dt=lc+os+svc,cn=rv-dt,ic=fl(rv*(S.indr/100)),op=cn-ic,mg=rv>0?(op/rv)*100:0;
-  return{ct,rv,lc,os,svc,dt,cn,ic,op,mg};
+  const svc=(S.svc||0);              // 직접경비 (고정비)
+  const opex=0;                      // 운영경비 (별도 섹션 제거됨)
+  const dt=os+svc;                   // 총변동비 = 직접비 + 직접경비
+  const cn=rv-dt;                    // 공헌이익 = 매출 - 총변동비
+  const cnr=rv>0?(cn/rv)*100:0;
+  const ic=0;
+  const op=cn;
+  const mg=cnr;
+  const gp=cn+lc;                    // 매출총이익 = 공헌이익 + 인건비
+  const gpr=rv>0?(gp/rv)*100:0;
+  return{ct,rv,lc,os,svc,opex,dt,cn,cnr,gp,gpr,ic,op,mg};
 }
 
 /* ── 시나리오 자동 투찰율 계산 ──────────────────────────────────
@@ -1619,9 +1633,9 @@ function buildLeft(){
 
     <div class="sc">
       <div class="sc-head clickable" onclick=\"toggleAcc('outs',event)\" style="display:flex;align-items:center;justify-content:space-between">
-        <span class="sc-title" style="display:flex;align-items:center;gap:3px">외주비 / 직접경비 ${tip('외주 용역비, 콘텐츠·하드웨어·인테리어 등 직접 지출 비용. 직접경비는 서버/기타와 함께 손익계산서 서버/직접경비 항목에 반영됩니다.')}</span>
+        <span class="sc-title" style="display:flex;align-items:center;gap:3px">직접비 / 외주비 / 운영경비 ${tip('콘텐츠·하드웨어·인테리어·건축·시스템·개발 등 외주 직접비. 운영경비(여비교통비, 기타직접비, 식대/간식대/회식대/접대비 등)가 포함됩니다.')}</span>
         <div style="display:flex;align-items:center;gap:9px">
-          <span id="lbl_outs" style="font-size:13px;color:var(--purple);font-weight:700;letter-spacing:-0.3px">공급가액 ${fmtW(res.os)}</span>
+          <span id="lbl_outs" style="font-size:13px;color:var(--purple);font-weight:700;letter-spacing:-0.3px">직접비 ${fmtW(res.os)}</span>
           <button class="btn-cta" id="btn_add_outs" style="padding:4px 11px;font-size:11px;background:var(--purple);border-color:var(--purple)">+ 추가</button>
           <span id="acc-arr-outs" style="font-size:11px;color:var(--hint)">${UI.acOpen.outs?'▲':'▼'}</span>
         </div>
@@ -1641,15 +1655,6 @@ function buildLeft(){
         </div>
       </div>
       </div><!-- /acc-body-outs -->
-
-    <div class="sc">
-      <div class="sc-head clickable" onclick=\"toggleAcc('indr',event)\" style="display:flex;align-items:center;justify-content:space-between"><span class="sc-title" style="display:flex;align-items:center;gap:3px">간접비율 ${tip('공헌이익에서 차감되는 사업 간접비. 영업비, 일반관리비 등 고정비 충당 비율. 통상 5~15% 적용.')}</span><span id="acc-arr-indr" style="font-size:11px;color:var(--hint)">${UI.acOpen.indr?'▲':'▼'}</span></div>
-      <div id="acc-body-indr" style="display:${UI.acOpen.indr?'block':'none'}">
-      <div class="sc-body">
-        ${makeDualHTML({id:'indr',label:'사업 간접비율',value:S.indr,min:0,max:30,step:1,dec:0,hint:'순매출액 대비',color:'#0F6E56'})}
-      </div>
-      </div>
-    </div>
 
 
     <div style="text-align:center;font-size:10px;color:var(--hint);padding-bottom:8px;letter-spacing:0.2px">
@@ -1725,6 +1730,42 @@ function buildLaborHTML(){
   }).join('');
 }
 
+
+/* ── 운영경비 HTML 빌더 ── */
+function buildOpexHTML(){
+  if(!S.opex||!S.opex.length)return'<p style="text-align:center;font-size:12px;color:var(--hint);padding:12px 0;letter-spacing:0.2px">운영경비 항목을 추가하세요</p>';
+  return (S.opex||[]).map(row=>{
+    const v=parseFloat(row.amount)||0;
+    const sup=row.vatIncl?fl(v/1.1):v;
+    return`<div class="outs-row" data-opex-row="${row.id}">
+      <div style="display:flex;gap:5px;margin-bottom:7px;align-items:center">
+        <select class="grade-sel" style="width:auto" data-opex-of="catId" data-opex-oid="${row.id}">
+          ${OPEX_CATS.map(c=>`<option value="${c.id}"${c.id===row.catId?' selected':''}>${c.label}</option>`).join('')}
+        </select>
+        <input type="text" placeholder="항목명" value="${row.name||''}" data-opex-of="name" data-opex-oid="${row.id}" class="inp" style="flex:1;padding:6px 10px;font-size:12px" autocomplete="off">
+        <button class="icon-btn" data-del-opex="${row.id}" title="삭제">✕</button>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div class="money-wrap" style="flex:1">
+          <input type="text" inputmode="numeric" class="inp" style="padding-right:22px;font-size:13px;font-weight:600"
+            value="${fmtComma(row.amount)}" data-opex-of="amount" data-opex-oid="${row.id}" autocomplete="off">
+          <span class="money-unit">원</span>
+        </div>
+        <button class="vat-btn${row.vatIncl?' on':''}" data-opex-vat="${row.id}">${row.vatIncl?'✓ VAT포함':'VAT별도'}</button>
+        <button onclick="refreshOpexList();onCostChange();const b=this;b.textContent='✓';b.style.background='var(--kpi-green)';setTimeout(()=>{b.textContent='적용';b.style.background='var(--purple)';},1200)" style="padding:3px 9px;font-size:11px;font-weight:600;border:none;border-radius:5px;background:var(--purple);color:#fff;cursor:pointer;font-family:var(--font);flex-shrink:0">적용</button>
+      </div>
+      ${v>0?`<div class="sup-display" style="margin-top:5px;font-size:11px;color:var(--hint)">→ 공급가액 <strong style="color:var(--muted)">${fmtW(sup)}</strong></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function refreshOpexList(){
+  setHTML('opex_list',buildOpexHTML());
+  const r=compute(S.bid);
+  setText('lbl_opex','합계 '+fmtW(r.svc-(S.svc||0)-(S.outs||[]).filter(x=>x.catId==='direct').reduce((s,x)=>{const v=parseFloat(x.amount)||0;return s+(x.vatIncl?fl(v/1.1):v);},0)));
+  updateStickyKPI();
+}
+
 function buildOutsHTML(){
   if(!S.outs.length)return'<p style="text-align:center;font-size:12px;color:var(--hint);padding:10px 0;letter-spacing:0.2px">외주비 항목을 추가하세요</p>';
   return S.outs.map(row=>{
@@ -1791,12 +1832,16 @@ function bindLeftEvents(){
     if(e.target.id==='btn_add_outs'){if(!IS_READONLY){S.outs.push({id:uid(),catId:'contents',name:'',amount:0,vatIncl:false});saveKey('outs');refreshOutsList();onCostChange();}return;}
     const dlo=e.target.dataset.delOut;if(dlo){if(!IS_READONLY){S.outs=S.outs.filter(r=>r.id!=dlo);saveKey('outs');refreshOutsList();onCostChange();}return;}
     const vat=e.target.dataset.vat;if(vat){if(!IS_READONLY){const row=S.outs.find(r=>r.id==vat);if(row){row.vatIncl=!row.vatIncl;saveKey('outs');refreshOutsList();onCostChange();}}return;}
+    const dop=e.target.dataset.delOpex;if(dop){if(!IS_READONLY){S.opex=(S.opex||[]).filter(r=>r.id!=dop);saveKey('opex');refreshOpexList();onCostChange();}return;}
+    const ovat=e.target.dataset.opexVat;if(ovat){if(!IS_READONLY){const row=(S.opex||[]).find(r=>r.id==ovat);if(row){row.vatIncl=!row.vatIncl;saveKey('opex');refreshOpexList();onCostChange();}}return;}
   });
   leftEl.addEventListener('change',e=>{
     const lid=e.target.dataset.lid,lf=e.target.dataset.lf;
     if(lid&&lf&&!IS_READONLY){const row=S.labor.find(r=>r.id==lid);if(!row)return;if(lf==='role')row.role=e.target.value;else if(lf==='grade')row.grade=e.target.value;else if(lf==='count')row.count=Math.max(1,parseInt(e.target.value)||1);else if(lf==='mm')row.mm=Math.max(0.1,parseFloat(e.target.value)||0.1);saveKey('labor');refreshLaborList();onCostChange();return;}
     const oid=e.target.dataset.oid,of_=e.target.dataset.of;
     if(oid&&of_&&of_!=='name'&&of_!=='amount'&&!IS_READONLY){const row=S.outs.find(r=>r.id==oid);if(!row)return;row[of_]=e.target.value;saveKey('outs');refreshOutsList();onCostChange();}
+    const opex_oid=e.target.dataset.opexOid,opex_of=e.target.dataset.opexOf;
+    if(opex_oid&&opex_of&&opex_of!=='name'&&opex_of!=='amount'&&!IS_READONLY){const row=(S.opex||[]).find(r=>r.id==opex_oid);if(!row)return;row[opex_of]=e.target.value;saveKey('opex');refreshOpexList();onCostChange();}
   });
   // 인건비/외주비 input 이벤트 실시간 갱신
   leftEl.addEventListener('input',e=>{
@@ -1811,9 +1856,11 @@ function bindLeftEvents(){
   });
   leftEl.addEventListener('input',e=>{
     if(e.target.dataset.of==='name'&&!IS_READONLY){const row=S.outs.find(r=>r.id==e.target.dataset.oid);if(row){row.name=e.target.value;saveKey('outs');}}
+    if(e.target.dataset.opexOf==='name'&&!IS_READONLY){const row=(S.opex||[]).find(r=>r.id==e.target.dataset.opexOid);if(row){row.name=e.target.value;saveKey('opex');}}
   });
   leftEl.addEventListener('focus',e=>{if(e.target.dataset.of==='amount'){const n=parseComma(e.target.value);e.target.value=n===0?'':String(n);e.target.select();}},true);
   leftEl.addEventListener('input',e=>{
+    if(e.target.dataset.opexOf==='amount'&&!IS_READONLY){const row=(S.opex||[]).find(r=>r.id==e.target.dataset.opexOid);if(!row)return;row.amount=Math.max(0,parseInt(e.target.value.replace(/[^\d]/g,''),10)||0);saveKey('opex');const wrap=e.target.closest('[data-opex-row]');if(wrap){const v=row.amount,sup=row.vatIncl?fl(v/1.1):v;let sd=wrap.querySelector('.sup-display');if(!sd){sd=document.createElement('div');sd.className='sup-display';sd.style.cssText='margin-top:5px;font-size:11px;color:var(--hint)';wrap.appendChild(sd);}sd.innerHTML=v>0?`→ 공급가액 <strong style="color:var(--muted)">${fmtW(sup)}</strong>`:'';} const r2=compute(S.bid);refreshOpexList();onCostChange();}
     if(e.target.dataset.of==='amount'&&!IS_READONLY){const row=S.outs.find(r=>r.id==e.target.dataset.oid);if(!row)return;row.amount=Math.max(0,parseInt(e.target.value.replace(/[^\d]/g,''),10)||0);saveKey('outs');const wrap=e.target.closest('[data-outs-row]');if(wrap){const v=row.amount,sup=row.vatIncl?fl(v/1.1):v;let sd=wrap.querySelector('.sup-display');if(!sd){sd=document.createElement('div');sd.className='sup-display';sd.style.cssText='margin-top:5px;font-size:11px;color:var(--hint);letter-spacing:0.2px';wrap.appendChild(sd);}sd.innerHTML=v>0?`→ 공급가액 <strong style="color:var(--muted)">${fmtW(sup)}</strong>`:'';}
       // 공급가액 헤더 실시간 갱신
       const r2=compute(S.bid);
@@ -1900,27 +1947,59 @@ function buildRight(){
 }
 
 function buildKPIHTML(res){
+  // M/M 투입 합계 계산
+  const mms=getMMs();
+  const totalMM=S.labor.reduce((s,r)=>s+r.count*r.mm,0);
+  const mgC=res.cn>=0?(res.cnr>=20?'var(--kpi-green)':'var(--kpi-yellow)'):'var(--kpi-red)';
+  const mgBg=res.cn>=0?(res.cnr>=20?'var(--green-bg)':'var(--amber-bg)'):'var(--red-bg)';
+  const mgBdr=res.cn>=0?(res.cnr>=20?'#c0dd97':'#f0d9a0'):'#f5b7b7';
   return`
-    <div class="kpi"><div class="kpi-label" style="display:flex;align-items:center;gap:3px">투찰금액(VAT포함)${tip('기초금액 × 투찰율. 발주기관에 제출하는 최종 입찰가격(VAT 포함).')}</div><div class="kpi-value">${fmtW(res.ct)}</div><div class="kpi-sub">투찰율 ${S.bid.toFixed(2)}%</div></div>
-    <div class="kpi" style="background:var(--blue-bg);border-color:#b5d4f4"><div class="kpi-label" style="display:flex;align-items:center;gap:3px">공급가액(매출)${tip('투찰금액 ÷ 1.1. 부가세 제외 실제 매출액.')}</div><div class="kpi-value" style="color:var(--blue)">${fmtW(res.rv)}</div><div class="kpi-sub">VAT 제외</div></div>
-    <div class="kpi" style="background:var(--red-bg);border-color:#f5b7b7"><div class="kpi-label" style="display:flex;align-items:center;gap:3px">총 변동비${tip('인건비 + 외주비 + 서버/직접경비의 합. 매출에서 이 비용을 뺀 값이 공헌이익입니다.')}</div><div class="kpi-value" style="color:var(--red)">${fmtW(res.dt)}</div></div>
-    <div class="kpi" style="background:${mbg(res.mg)};border-color:${mbdr(res.mg)}"><div class="kpi-label" style="display:flex;align-items:center;gap:3px">영업이익${tip('공헌이익 − 간접비. 최종 수익성 지표. 목표: 공급가액의 10% 이상 권장.')}</div><div class="kpi-value" style="color:${mcol(res.mg)}">${fmtW(res.op)}</div></div>
-    <div class="kpi" style="background:${mbg(res.mg)};border-color:${mbdr(res.mg)}">
-      <div class="kpi-label">영업이익률</div>
-      <div class="kpi-value" style="font-size:20px;font-weight:700;color:${mcol(res.mg)};letter-spacing:-0.5px">${res.mg.toFixed(2)}%</div>
-      <div class="kpi-sub" style="color:${mcol(res.mg)}">${res.mg>=10?'✓ 목표 달성':res.mg>=0?'△ 마진 주의':'✕ 적자'}</div>
-    </div>`;
+    <div class="kpi"><div class="kpi-label">투찰금액${tip('기초금액 × 투찰율. VAT 포함 최종 입찰가격.')}</div><div class="kpi-value">${fmtW(res.ct)}</div><div class="kpi-sub">투찰율 ${S.bid.toFixed(2)}%</div></div>
+    <div class="kpi" style="background:var(--blue-bg);border-color:#b5d4f4"><div class="kpi-label">매출액${tip('투찰금액 ÷ 1.1. VAT별도 매출액.')}</div><div class="kpi-value" style="color:var(--blue)">${fmtW(res.rv)}</div><div class="kpi-sub">VAT별도</div></div>
+    <div class="kpi" style="background:var(--purple-bg);border-color:#c4b5fd"><div class="kpi-label">직접비${tip('직접비(외주) + 직접경비 합계.')}</div><div class="kpi-value" style="color:var(--purple)">${fmtW(res.os+res.svc)}</div><div class="kpi-sub">직접비 ${fmtW(res.os)}</div></div>
+    <div class="kpi" style="background:${mgBg};border-color:${mgBdr}"><div class="kpi-label" style="display:flex;align-items:center;gap:3px">공헌이익${tip('공급가액 − 외주 − 직접경비. d&#39;strict 핵심 지표.')}</div><div class="kpi-value" style="color:${mgC}">${fmtW(res.cn)}</div></div>
+    <div class="kpi" style="background:${mgBg};border-color:${mgBdr}">
+      <div class="kpi-label" style="display:flex;align-items:center;gap:3px">공헌이익률${tip('공헌이익 ÷ 공급가액 × 100%.')}</div>
+      <div class="kpi-value" style="font-size:20px;font-weight:700;color:${mgC};letter-spacing:-0.5px">${res.cnr.toFixed(2)}%</div>
+      <div class="kpi-sub" style="color:${mgC}">${res.cnr>=20?'✓ 목표 달성':res.cn>=0?'△ 주의':'✕ 적자'}</div>
+    </div>
+    <div class="kpi" style="background:var(--bg);border-color:var(--border)"><div class="kpi-label">M/M 투입${tip('총 투입 M/M(man-month). 인원×개월 합계.')}</div><div class="kpi-value" style="font-size:18px;color:var(--text)">${totalMM.toFixed(1)}<span style="font-size:12px;font-weight:400;margin-left:3px">M/M</span></div><div class="kpi-sub">${S.labor.length}명 구성</div></div>`;
 }
 function updateKPIs(){setHTML('kpi_grid',buildKPIHTML(compute(S.bid)));updateStickyKPI();}
 
 function buildPnLHTML(res){
   return PNL_DEFS.map(row=>{
-    let v=row.key==='mg'?res.mg:row.neg?-res[row.key]:res[row.key];
-    const col=row.pct?mcol(res.mg):row.accent?(res.op>=0?'var(--kpi-green)':'var(--kpi-red)'):(v<0?'var(--red)':'var(--text)');
+    let displayStr, col;
+
+    if(row.pctOfRv){
+      // 간접비율: ic ÷ rv × 100
+      const pv=res.rv>0?(res.ic/res.rv)*100:0;
+      displayStr=pv.toFixed(2)+'%';
+      col='var(--muted)';
+    } else if(row.pct){
+      // 퍼센트 항목: cnr / gpr / mg
+      const pv=res[row.key]||0;
+      displayStr=pv.toFixed(2)+'%';
+      if(row.key==='mg')      col=mcol(pv);
+      else if(row.key==='cnr')col=pv>=15?'var(--kpi-green)':pv>=0?'var(--kpi-yellow)':'var(--kpi-red)';
+      else                    col=pv>=10?'var(--kpi-green)':pv>=0?'var(--kpi-yellow)':'var(--kpi-red)';
+    } else {
+      // 금액 항목
+      const v=row.neg?-res[row.key]:res[row.key];
+      displayStr=fmtF(v);
+      if(row.accent)      col=res.cn>=0?'var(--kpi-green)':'var(--kpi-red)';
+      else if(row.key==='gp') col=res.gp>=0?'var(--kpi-green)':'var(--kpi-red)';
+      else if(row.key==='cn') col=res.cn>=0?'var(--kpi-green)':'var(--kpi-red)';
+      else                col=v<0?'var(--red)':'var(--text)';
+    }
+
     const tipHtml=row.tip?tip(row.tip):'';
+    const fs=row.bold?'14px':'12px';
+    const fw=row.bold?600:300;
+    const fc=row.bold?'var(--text)':'var(--muted)';
     return`<div class="pnl-row ${row.sep?'sep':''} ${row.indent?'pnl-indent':''}">
-      <span style="display:flex;align-items:center;gap:3px;font-weight:${row.bold?600:300};color:${row.bold?'var(--text)':'var(--muted)'};font-size:${row.bold?'14px':'12px'};letter-spacing:${row.bold?'-0.3px':'0.2px'}">${row.label}${row.key==='ic'?` (${S.indr}%)`:''}:${tipHtml}</span>
-      <span style="font-weight:600;color:${col};font-size:${row.bold?'14px':'12px'};letter-spacing:-0.3px">${row.pct?res.mg.toFixed(2)+'%':fmtF(v)}</span>
+      <span style="display:flex;align-items:center;gap:3px;font-weight:${fw};color:${fc};font-size:${fs};letter-spacing:${row.bold?'-0.3px':'0.2px'}">${row.label}:${tipHtml}</span>
+      <span style="font-weight:600;color:${col};font-size:${fs};letter-spacing:-0.3px">${displayStr}</span>
     </div>`;
   }).join('');
 }
@@ -1929,23 +2008,30 @@ function updatePnL(){const el=document.getElementById('pnl_body');if(el)el.inner
 function buildScBodyHTML(scr){
   const skys=[{k:'minBid',isMid:true},{k:'cur',isCur:true}];
   const rows=[
-    {label:'투찰금액',key:'ct'},
-    {label:'공급가액',key:'rv'},
-    {label:'인건비',key:'lc'},
-    {label:'외주비',key:'os'},
-    {label:'공헌이익',key:'cn',bold:true,sep:true},
-    {label:'간접비',key:'ic'},
-    {label:'영업이익',key:'op',bold:true,sep:true,acc:true},
-    {label:'이익률',key:'mg',bold:true,sep:true,pct:true}
+    {label:'투찰금액',    key:'ct'},
+    {label:'매출액',      key:'rv'},
+    {label:'직접비',      key:'os'},
+    {label:'직접경비',    key:'svc'},
+    {label:'공헌이익',    key:'cn',  bold:true, sep:true, acc:true},
+    {label:'공헌이익률',  key:'cnr', bold:true, pct:true},
+    {label:'(+)인건비',   key:'lc',  addBack:true},
+    {label:'매출총이익',  key:'gp',  bold:true, sep:true},
+    {label:'매출총이익률',key:'gpr', bold:true, pct:true},
+
   ];
   return rows.map((row,ri)=>`<tr class="${row.sep?'sep-row':''}" style="background:${ri%2===0?'#fff':'var(--bg)'}">
     <td style="font-weight:${row.bold?600:300};color:${row.bold?'var(--text)':'var(--muted)'};letter-spacing:0.2px">${row.label}</td>
     ${skys.map(s=>{
-      const r=scr[s.k],v=r[row.key];
-      const col=row.pct?mcol(v):row.acc?v>=0?'var(--kpi-green)':'var(--kpi-red)':'var(--text)';
-      const bg=row.pct?mbg(v):s.isCur?'var(--blue-bg)':'';
+      const r=scr[s.k];
+      const v=r[row.key]||0;
+      // pct 표시: cnr/gpr/mg
+      const isPct=row.pct;
+      const dispStr=row.addBack?('+'+fmtW(r[row.key]||0)):isPct?v.toFixed(2)+'%':fmtW(v);
+      // 색상
+      const col=isPct?(row.key==='mg'?mcol(v):row.key==='cnr'?(v>=15?'var(--kpi-green)':v>=0?'var(--kpi-yellow)':'var(--kpi-red)'):(v>=10?'var(--kpi-green)':v>=0?'var(--kpi-yellow)':'var(--kpi-red)')):row.acc?(v>=0?'var(--kpi-green)':'var(--kpi-red)'):row.key==='gp'?(v>=0?'var(--kpi-green)':'var(--kpi-red)'):'var(--text)';
+      const bg=isPct&&row.key==='mg'?mbg(v):s.isCur?'var(--blue-bg)':'';
       const bdr=s.isCur?'border-left:2px solid #b5d4f4':'';
-      return`<td style="font-weight:${row.bold?600:300};color:${col};background:${bg};${bdr}">${row.pct?v.toFixed(2)+'%':fmtW(v)}</td>`;
+      return`<td style="font-weight:${row.bold?600:300};color:${col};background:${bg};${bdr}">${dispStr}</td>`;
     }).join('')}
   </tr>`).join('');
 }
@@ -1964,7 +2050,7 @@ function buildTabHTML(res,scr){
 
 function buildDashboardHTML(res){
   const totalCost=res.rv;
-  const costSegs=[{name:'인건비',v:fl(res.lc),c:'#185FA5'},{name:'외주비',v:fl(res.os),c:'#534AB7'},{name:'서버/기타',v:fl(res.svc),c:'#854F0B'},{name:'간접비',v:fl(res.ic),c:'#73726c'},{name:'영업이익',v:Math.max(0,fl(res.op)),c:'#3B6D11'}].filter(d=>d.v>0);
+  const costSegs=[{name:'외주',v:fl(res.os),c:'#534AB7'},{name:'직접경비',v:fl(res.svc),c:'#854F0B'},{name:'공헌이익',v:Math.max(0,fl(res.cn)),c:'#3B6D11'}].filter(d=>d.v>0);
   // catData: 입력된 카테고리별 실제 외주비 집계 (모든 카테고리 표시)
   const catData=OCATS.map(cat=>{
     const t=S.outs.filter(r=>r.catId===cat.id).reduce((s,r)=>{const v=Math.max(0,parseFloat(r.amount)||0);return s+(r.vatIncl?fl(v/1.1):v);},0);
@@ -1981,7 +2067,7 @@ function buildDashboardHTML(res){
       <div class="sc" style="margin:0">
         <div class="sc-head">
           <span class="sc-title">매출 대비 비용 구조</span>
-          <span style="font-size:11px;color:var(--blue);font-weight:700">전체 ${fmtW(totalCost)}</span>
+          <span style="font-size:11px;color:var(--blue);font-weight:700">매출액 ${fmtW(totalCost)}</span>
         </div>
         <div class="sc-body">
           <div style="display:flex;align-items:center;gap:20px">
@@ -2006,7 +2092,7 @@ function buildDashboardHTML(res){
       </div>
       <div class="sc" style="margin:0">
         <div class="sc-head">
-          <span class="sc-title">외주비 / 직접경비 카테고리</span>
+          <span class="sc-title">직접비 / 외주비 카테고리</span>
           <span style="font-size:11px;color:var(--purple);font-weight:700">전체 ${fmtW(catData.reduce((s,d)=>s+d.v,0))}</span>
         </div>
         <div class="sc-body">
@@ -2074,9 +2160,9 @@ function updateStickyKPI(){
   function s(id,val,col){const el=document.getElementById(id);if(el){el.textContent=val;if(col)el.style.color=col;}}
   s('ks-bid-v', fmtW(r.ct));
   s('ks-rv-v',  fmtW(r.rv), 'var(--blue)');
-  s('ks-op-v',  fmtW(r.op), opColor);
-  s('ks-mg-v',  r.mg.toFixed(2)+'%', mgColor);
-  s('ks-dt-v',  fmtW(r.dt), 'var(--red)');
+  s('ks-op-v',  fmtW(r.cn), mgColor);
+  s('ks-mg-v',  r.cnr.toFixed(2)+'%', mgColor);
+  s('ks-dt-v',  fmtW(r.os+r.svc), 'var(--red)');
 }
 function renderRightFull(){
   const res=compute(S.bid),scr={minBid:compute(S.minBid||70),cur:res};
@@ -2171,17 +2257,17 @@ function buildExcel(){
   const N=v=>typeof v==='number'?v.toLocaleString('ko-KR'):'';
   const P=v=>typeof v==='number'?v.toFixed(2)+'%':'';
   const rows=[];
-  rows.push(["d'strict B2G Simulator Vol.1.2.1","","생성:",new Date().toLocaleString('ko-KR')]);
+  rows.push(["d'strict B2G Simulator Vol.1.3","","생성:",new Date().toLocaleString('ko-KR')]);
   rows.push(["프로젝트명",S.projectName||"(미입력)"]);
   rows.push([]);
   rows.push(["[투찰 정보]"]);
   rows.push(["기초금액(원)",N(S.base),"투찰율",P(S.bid)]);
-  rows.push(["낙찰금액(원)",N(r.ct),"공급가액(원)",N(r.rv)]);
+  rows.push(["낙찰금액(원)",N(r.ct),"매출액(원)",N(r.rv)]);
   rows.push([]);
   rows.push(["[손익 계산서]","금액(원)","비율"]);
-  rows.push(["공급가액(매출)",N(r.rv),"100%"]);
+  rows.push(["매출액(VAT별도)",N(r.rv),"100%"]);
   rows.push(["(-) 인건비",N(r.lc),r.rv>0?((r.lc/r.rv)*100).toFixed(1)+'%':'-']);
-  rows.push(["(-) 외주비 공급가액",N(r.os),r.rv>0?((r.os/r.rv)*100).toFixed(1)+'%':'-']);
+  rows.push(["(-) 직접비",N(r.os),r.rv>0?((r.os/r.rv)*100).toFixed(1)+'%':'-']);
   rows.push(["(-) 서버/기타",N(r.svc),r.rv>0?((r.svc/r.rv)*100).toFixed(1)+'%':'-']);
   rows.push(["공헌이익",N(r.cn),r.rv>0?((r.cn/r.rv)*100).toFixed(1)+'%':'-']);
   rows.push(["(-) 간접비("+S.indr+"%)",N(r.ic),S.indr+'%']);
@@ -2193,7 +2279,7 @@ function buildExcel(){
     rows.push(["",GD[lr.grade].label,lr.count,lr.mm,N(g.mm),N(fl(g.mm*lr.count*lr.mm))]);
   });
   rows.push([]);
-  rows.push(["[외주비 상세]","카테고리","항목명","입력금액(원)","VAT","공급가액(원)"]);
+  rows.push(["[외주비 상세]","카테고리","항목명","입력금액(원)","VAT","매출액(원)"]);
   S.outs.forEach(o=>{
     const v=parseFloat(o.amount)||0,sup=o.vatIncl?fl(v/1.1):v;
     rows.push(["",OCATS.find(c=>c.id===o.catId)?.label||o.catId,o.name,N(v),o.vatIncl?'포함':'별도',N(sup)]);
@@ -2213,7 +2299,7 @@ function buildWordReport(){
   const sep='='.repeat(50);
   const lines=[
     sep,
-    "  d'strict B2G Simulator Vol.1.2.1",
+    "  d'strict B2G Simulator Vol.1.3",
     "  공공사업 예산 분석 보고서",
     sep,
     "프로젝트명: "+(S.projectName||"(미입력)"),
@@ -2253,7 +2339,7 @@ function buildWordReport(){
     "",
     sep,
     "d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭",
-    "d'strict B2G Simulator Vol.1.2.1",
+    "d'strict B2G Simulator Vol.1.3",
     sep,
   ];
   return '﻿'+lines.join('\r\n');
@@ -2262,7 +2348,7 @@ function buildWordReport(){
 function buildPPTNotes(){
   const r=compute(S.bid),mms=getMMs();
   const lines=[
-    "━━━ PPT 발표 노트 — d'strict B2G Simulator Vol.1.2.1 ━━━",
+    "━━━ PPT 발표 노트 — d'strict B2G Simulator Vol.1.3 ━━━",
     "",
     "【슬라이드 1: 프로젝트 개요】",
     "- 프로젝트명: "+(S.projectName||"(미입력)"),
@@ -2291,7 +2377,7 @@ function buildPPTNotes(){
     "- 현재 투찰율 "+S.bid.toFixed(2)+"%: 영업이익 "+fmtW(r.op)+" / 이익률 "+r.mg.toFixed(2)+"%",
     "",
     ...(S.memo?["【슬라이드 6: 특이사항】",S.memo,""]:[]),
-    "━━━ d'strict 2026년 노임단가 기준 · d'strict B2G Simulator Vol.1.2.1 ━━━",
+    "━━━ d'strict 2026년 노임단가 기준 · d'strict B2G Simulator Vol.1.3 ━━━",
   ];
   return '﻿'+lines.join('\r\n');
 }
@@ -2878,7 +2964,7 @@ function renderPPList(){
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
             <div style="background:var(--bg);border-radius:7px;padding:8px 10px">
-              <div style="font-size:9px;color:var(--hint);margin-bottom:2px;text-transform:uppercase;letter-spacing:0.3px">공급가액</div>
+              <div style="font-size:9px;color:var(--hint);margin-bottom:2px;text-transform:uppercase;letter-spacing:0.3px">매출액</div>
               <div style="font-size:12px;font-weight:700;color:var(--blue)">${fmtW(p.result.rv)}</div>
             </div>
             <div style="background:var(--bg);border-radius:7px;padding:8px 10px">
@@ -2992,7 +3078,7 @@ function renderPPCompare(){
   const metrics=[
     {label:'기초금액',key:'base',fn:p=>p.state.base,fmt:v=>fmtW(v)},
     {label:'투찰율',key:'bid',fn:p=>p.state.bid,fmt:v=>v.toFixed(2)+'%'},
-    {label:'공급가액',key:'rv',fn:p=>p.result.rv,fmt:v=>fmtW(v)},
+    {label:'매출액',  key:'rv',fn:p=>p.result.rv,fmt:v=>fmtW(v)},
     {label:'인건비',key:'lc',fn:p=>p.result.lc,fmt:v=>fmtW(v)},
     {label:'외주비',key:'os',fn:p=>p.result.os,fmt:v=>fmtW(v)},
     {label:'공헌이익',key:'cn',fn:p=>p.result.cn,fmt:v=>fmtW(v),bold:true},
@@ -3060,7 +3146,7 @@ function exportCompareXLSX(){
   const acct=v=>typeof v==='number'?v.toLocaleString('ko-KR'):'';
   const pct=v=>typeof v==='number'?v.toFixed(2)+'%':'';
   const rows=[];
-  rows.push(["d'strict B2G Simulator Vol.1.2.1 — 프로젝트 비교 분석","","","생성:",new Date().toLocaleString('ko-KR')]);
+  rows.push(["d'strict B2G Simulator Vol.1.3 — 프로젝트 비교 분석","","","생성:",new Date().toLocaleString('ko-KR')]);
   rows.push(["선택 프로젝트",...projects.map(p=>p.name)]);
   rows.push(["분석 일시",...projects.map(p=>p.ts)]);
   rows.push([]);
@@ -3124,7 +3210,7 @@ function captureSnapshot(fmt){
   // 헤더 바
   ctx.fillStyle='#1a1a18';roundRect(ctx,20,20,W-40,52,{tl:12,tr:12,bl:0,br:0});ctx.fill();
   ctx.fillStyle='#fff';ctx.font='700 15px "Pretendard Variable",Arial,sans-serif';
-  ctx.fillText("d'strict B2G Simulator Vol.1.2.1",40,52);
+  ctx.fillText("d'strict B2G Simulator Vol.1.3",40,52);
   ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='400 11px Arial';
   ctx.fillText(S.projectName||'프로젝트',40,68);
   ctx.fillText(new Date().toLocaleDateString('ko-KR'),W-120,52);
