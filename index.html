@@ -2556,89 +2556,238 @@ async function exportDstrictXLSX(){
   if(!BASELINE&&!confirm('변경 적용 전입니다. 현재 값으로 추출하시겠습니까?'))return;
   const r=compute(S.bid), mms=getMMs();
 
-  // SheetJS 로드
   if(!window.XLSX){
     await new Promise((res,rej)=>{
       const s=document.createElement('script');
       s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-      s.onload=res;s.onerror=rej;document.head.appendChild(s);
+      s.onload=res; s.onerror=rej; document.head.appendChild(s);
     });
   }
+
+  // ── 유틸 ──
+  const fl=n=>Math.floor(n);
+  const fmt=v=>typeof v==='number'?v.toLocaleString('ko-KR'):String(v??'');
+  const pct=(v,base)=>base>0?((v/base)*100).toFixed(1)+'%':'-';
+  const today=new Date().toLocaleDateString('ko-KR');
+  const totalMM=S.labor.reduce((s,lr)=>s+lr.count*lr.mm,0);
+
   const WB=XLSX.utils.book_new();
 
-  // ── 시트 1: 손익계산서 ──
-  const pnlData=[
-    ["d'strict B2G Simulator Vol.1.3.1","","생성일:",new Date().toLocaleDateString('ko-KR')],
-    ["프로젝트명",S.projectName||"(미입력)","투찰율",S.bid.toFixed(2)+"%"],
-    [],
-    ["항목","금액(원)","비율(%)","비고"],
-    ["투찰금액 (VAT포함)",r.ct,"",S.bid.toFixed(2)+"%"],
-    ["매출액 (VAT별도)",r.rv,"100.00%",""],
-    ["(-) 직접비(외주비)",-r.os,r.rv>0?((-r.os/r.rv)*100).toFixed(2)+"%":"","외주 직접비"],
-    ["(-) 직접경비",-r.svc,r.rv>0?((-r.svc/r.rv)*100).toFixed(2)+"%":"","과업 필수 실비용"],
-    ["(-) 운영경비",-r.opex,r.rv>0?((-r.opex/r.rv)*100).toFixed(2)+"%":"","교통/숙박/회식 등"],
-    ["공헌이익",r.cn,r.rv>0?((r.cn/r.rv)*100).toFixed(2)+"%":"","핵심 지표"],
-    ["공헌이익률","",r.cnr.toFixed(2)+"%",""],
-    ["(-) 내부인건비",-r.lc,r.rv>0?((-r.lc/r.rv)*100).toFixed(2)+"%":"","d'strict 내부"],
-    ["매출총이익",r.gp,r.rv>0?((r.gp/r.rv)*100).toFixed(2)+"%":"",""],
-    ["매출총이익률","",r.gpr.toFixed(2)+"%",""],
-    [],
-    ["TOTAL","매출액",r.rv,"",""],
+  /* ═══════════════════════════════════════════════════════════════
+     시트 1: 전체 예산 요약  (참고 이미지 구조)
+     좌측: 손익계산서  |  우측: M/M 구성비 + 비용 구조
+  ═══════════════════════════════════════════════════════════════ */
+  const ws1=XLSX.utils.aoa_to_sheet([]);
+
+  // 병합 셀 목록
+  const merges=[];
+  const M=(rs,re,cs,ce)=>merges.push({s:{r:rs,c:cs},e:{r:re,c:ce}});
+
+  // 셀 스타일 헬퍼 (xlsx Community Edition은 스타일 미지원 → 데이터 구조로 표현)
+  // 데이터를 2D 배열로 구성 후 aoa_to_sheet로 변환
+  // 컬럼 구성:
+  //  A(0)=계정과목, B(1)=금액(원), C(2)=비율(%), D(3)=공백,
+  //  E(4)=MM구성/비용구조 항목, F(5)=값, G(6)=비율
+
+  const COLS=['계정과목','금액(원)','비율(%)','','항목','금액/M/M','비율(%)'];
+
+  // ─ 1행: 타이틀 ─
+  const rows=[];
+  rows.push(["d'strict B2G Simulator Vol.1.3.1  ─  "+( S.projectName||'프로젝트명 미입력'),'','','','생성일:',today,'']);
+  M(0,0,0,6); // 타이틀 전체 병합은 xlsx CE에서 불가 → 컬럼별로 처리
+
+  // ─ 2행: 공백 ─
+  rows.push(['','','','','','','']);
+
+  // ─ 3행: 프로젝트 정보 ─
+  rows.push(['투찰금액(VAT포함)',fmt(r.ct),'','','매출액(VAT별도)',fmt(r.rv),'100%']);
+  rows.push(['투찰율',S.bid.toFixed(2)+'%','','','공헌이익률',r.cnr.toFixed(2)+'%','']);
+  rows.push(['기초금액',fmt(S.base),'','','매출총이익률',r.gpr.toFixed(2)+'%','']);
+
+  // ─ 6행: 공백 ─
+  rows.push(['','','','','','','']);
+
+  // ─ 7행: 헤더 ─
+  const hdrRow=rows.length;
+  rows.push(['계정과목','금액(원)','비율(%)','','M/M 구성비 요약','투입 M/M','비율(%)']);
+
+  // ─ 손익계산서 + 우측 M/M 구성비 병렬 ─
+  // 좌측 손익 항목
+  const pnlItems=[
+    {label:'매출액 (VAT별도)',  val:r.rv,   indent:0, bold:true,  color:'매출'},
+    {label:'  (-) 직접비(외주비)', val:r.os, indent:1, bold:false, color:'직접비'},
   ];
-  const pnlWS=XLSX.utils.aoa_to_sheet(pnlData);
+  // 직접비 세부 (OCATS direct 항목별)
+  OCATS.filter(c=>c.group==='direct').forEach(cat=>{
+    const t=S.outs.filter(o=>o.catId===cat.id).reduce((s,o)=>{
+      const v=parseFloat(o.amount)||0; return s+(o.vatIncl?fl(v/1.1):v);
+    },0);
+    if(t>0) pnlItems.push({label:'    '+cat.label, val:t, indent:2, bold:false, color:'세부'});
+  });
+  pnlItems.push({label:'  (-) 직접경비', val:r.svc,  indent:1, bold:false, color:'직접경비'});
+  pnlItems.push({label:'  (-) 운영경비', val:r.opex, indent:1, bold:false, color:'운영경비'});
+  pnlItems.push({label:'공헌이익',        val:r.cn,   indent:0, bold:true,  color:'공헌이익', sep:true});
+  pnlItems.push({label:'  공헌이익률',   val:null,   indent:1, bold:false, color:'공헌이익', pct:r.cnr});
+  pnlItems.push({label:'  (-) 내부인건비', val:r.lc, indent:1, bold:false, color:'인건비', sep:true});
+  pnlItems.push({label:'매출총이익',      val:r.gp,   indent:0, bold:true,  color:'매출총이익', sep:false});
+  pnlItems.push({label:'  매출총이익률', val:null,   indent:1, bold:false, color:'매출총이익', pct:r.gpr});
+
+  // 우측 M/M 구성비 항목
+  const mmRoles={};
+  S.labor.forEach(lr=>{
+    const role=(ROLES.find(rx=>rx.id===(lr.role||'dev'))||ROLES[4]).label;
+    if(!mmRoles[role]) mmRoles[role]=0;
+    mmRoles[role]+=lr.count*lr.mm;
+  });
+  const mmList=Object.entries(mmRoles);
+
+  // 좌우 병렬 행 구성
+  const maxRows=Math.max(pnlItems.length, mmList.length+3);
+  for(let i=0;i<maxRows;i++){
+    const p=pnlItems[i];
+    let leftLabel='', leftVal='', leftPct='';
+    let rightLabel='', rightVal='', rightPct='';
+
+    if(p){
+      leftLabel=p.label;
+      leftVal=p.val!=null?fmt(p.val):'';
+      leftPct=p.pct!=null?p.pct.toFixed(2)+'%':(p.val!=null&&r.rv>0?pct(p.val,r.rv):'');
+    }
+    // 우측: M/M 구성비
+    if(i===0){rightLabel='총 투입 M/M'; rightVal=totalMM.toFixed(1)+' M/M'; rightPct='';}
+    else if(i===1){rightLabel='투입 인원'; rightVal=S.labor.length+'명'; rightPct='';}
+    else if(i===2){rightLabel='─────────'; rightVal=''; rightPct='';}
+    else if(mmList[i-3]){
+      const [role,mm]=mmList[i-3];
+      rightLabel=role; rightVal=mm.toFixed(1)+' M/M'; rightPct=totalMM>0?((mm/totalMM)*100).toFixed(1)+'%':'';
+    }
+    rows.push([leftLabel, leftVal, leftPct, '', rightLabel, rightVal, rightPct]);
+  }
+
+  // ─ 공백 ─
+  rows.push(['','','','','','','']);
+
+  // ─ 비용 구조 요약 ─
+  const costHdrRow=rows.length;
+  rows.push(['비용 구조 요약','금액(원)','비율(%)','','세부 항목 내역','금액(원)','VAT']);
+
+  // 좌: 3개 카테고리 요약  |  우: 세부 항목
+  const costSummary=[
+    {label:'직접비(외주비)',  val:r.os},
+    {label:'직접경비',        val:r.svc},
+    {label:'운영경비',        val:r.opex},
+    {label:'TOTAL',           val:r.os+r.svc+r.opex, bold:true},
+  ];
+  const outsDetail=S.outs.map(o=>{
+    const v=parseFloat(o.amount)||0;
+    const sup=o.vatIncl?fl(v/1.1):v;
+    const cat=OCATS.find(c=>c.id===o.catId);
+    const grp=cat?.group==='direct'?'직접비':cat?.group==='expense'?'직접경비':'운영경비';
+    return {grp, cat:cat?.label||o.catId, name:o.name||'', sup, vat:o.vatIncl?'포함':'별도'};
+  });
+
+  const maxCost=Math.max(costSummary.length, outsDetail.length);
+  for(let i=0;i<maxCost;i++){
+    const cs=costSummary[i];
+    const od=outsDetail[i];
+    rows.push([
+      cs?cs.label:'', cs?fmt(cs.val):'', cs&&r.rv>0?pct(cs.val,r.rv):'',
+      '',
+      od?`[${od.grp}] ${od.cat}${od.name?' - '+od.name:''}`:'' ,
+      od?fmt(od.sup):'', od?od.vat:'',
+    ]);
+  }
+
+  // ─ 푸터 ─
+  rows.push(['','','','','','','']);
+  rows.push(["d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭 · d'strict B2G Simulator Vol.1.3.1",'','','','','','']);
+
+  // 시트에 데이터 쓰기
+  XLSX.utils.sheet_add_aoa(ws1, rows, {origin:'A1'});
 
   // 열 너비 (정수 단위 - d'strict 규칙)
-  pnlWS['!cols']=[{wch:20},{wch:18},{wch:12},{wch:20}];
-  // 행 높이
-  pnlWS['!rows']=[{hpx:30},{hpx:18}];
+  ws1['!cols']=[
+    {wch:28},{wch:18},{wch:10},{wch:2},
+    {wch:24},{wch:16},{wch:8}
+  ];
 
-  XLSX.utils.book_append_sheet(WB,pnlWS,'손익계산서');
+  // 행 높이 (1행 타이틀: 30, 나머지: 18)
+  ws1['!rows']=rows.map((_,i)=>({hpx:i===0?30:18}));
 
-  // ── 시트 2: 투입 인력 ──
-  const laborData=[
-    ["d'strict B2G Simulator - 투입 인력 상세","","","","",""],
-    ["프로젝트명",S.projectName||"(미입력)","","","",""],
+  XLSX.utils.book_append_sheet(WB,ws1,'전체 예산 요약');
+
+  /* ═══════════════════════════════════════════════════════════════
+     시트 2: M/M 구성비 상세
+  ═══════════════════════════════════════════════════════════════ */
+  const ws2Data=[
+    ["d'strict B2G Simulator - M/M 구성비 상세",'','','','','생성일:',today],
+    ['프로젝트명',S.projectName||'(미입력)','','','','',''],
+    ['총 투입 M/M',totalMM.toFixed(1)+' M/M','','총 투입 인원',S.labor.length+'명','',''],
     [],
-    ["직무","등급","인원","MM","M/M 단가(원)","소계(원)"],
+    ['직무','등급','인원','M/M','M/M 단가(원)','소계(원)','비율(%)'],
   ];
   S.labor.forEach(lr=>{
     const g=mms[lr.grade];
     const role=(ROLES.find(rx=>rx.id===(lr.role||'dev'))||ROLES[4]).label;
-    laborData.push([role,GD[lr.grade]?.label||lr.grade,lr.count,lr.mm,g.mm,fl(g.mm*lr.count*lr.mm)]);
+    const sub=fl(g.mm*lr.count*lr.mm);
+    ws2Data.push([
+      role, GD[lr.grade]?.label||lr.grade, lr.count, lr.mm,
+      fmt(g.mm), fmt(sub),
+      totalMM>0?((lr.count*lr.mm/totalMM)*100).toFixed(1)+'%':'-'
+    ]);
   });
-  laborData.push([]);
-  laborData.push(["TOTAL","","",S.labor.reduce((s,lr)=>s+lr.count*lr.mm,0),"",r.lc]);
-  const laborWS=XLSX.utils.aoa_to_sheet(laborData);
-  laborWS['!cols']=[{wch:16},{wch:10},{wch:8},{wch:8},{wch:18},{wch:18}];
-  XLSX.utils.book_append_sheet(WB,laborWS,'투입인력');
+  ws2Data.push([]);
+  ws2Data.push(['TOTAL','','',fmt(totalMM),'',fmt(r.lc),'100%']);
+  ws2Data.push([]);
+  ws2Data.push(["d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭",'','','','','','']);
 
-  // ── 시트 3: 직접비/직접경비/운영경비 상세 ──
-  const outsData=[
-    ["d'strict B2G Simulator - 비용 상세","","","","",""],
-    ["프로젝트명",S.projectName||"(미입력)","","","",""],
+  const ws2=XLSX.utils.aoa_to_sheet(ws2Data);
+  ws2['!cols']=[{wch:16},{wch:10},{wch:8},{wch:8},{wch:18},{wch:18},{wch:8}];
+  ws2['!rows']=ws2Data.map((_,i)=>({hpx:i===0?30:18}));
+  XLSX.utils.book_append_sheet(WB,ws2,'M_M 구성비');
+
+  /* ═══════════════════════════════════════════════════════════════
+     시트 3: 직접비 / 직접경비 / 운영경비 비용 구조
+  ═══════════════════════════════════════════════════════════════ */
+  const ws3Data=[
+    ["d'strict B2G Simulator - 비용 구조 상세",'','','','','생성일:',today],
+    ['프로젝트명',S.projectName||'(미입력)','','','','',''],
     [],
-    ["구분","카테고리","항목명","입력금액(원)","VAT","공급가액(원)"],
+    // 요약 헤더
+    ['구분','금액(원)','비율(%)','','','',''],
+    ['직접비(외주비)',fmt(r.os),pct(r.os,r.rv),'','','',''],
+    ['직접경비',fmt(r.svc),pct(r.svc,r.rv),'','','',''],
+    ['운영경비',fmt(r.opex),pct(r.opex,r.rv),'','','',''],
+    ['TOTAL',fmt(r.os+r.svc+r.opex),pct(r.os+r.svc+r.opex,r.rv),'','','',''],
+    [],
+    // 세부 항목 헤더
+    ['구분','카테고리','항목명','입력금액(원)','VAT','공급가액(원)','비율(%)'],
   ];
   S.outs.forEach(o=>{
-    const v=parseFloat(o.amount)||0,sup=o.vatIncl?fl(v/1.1):v;
+    const v=parseFloat(o.amount)||0;
+    const sup=o.vatIncl?fl(v/1.1):v;
     const cat=OCATS.find(c=>c.id===o.catId);
     const grp=cat?.group==='direct'?'직접비(외주비)':cat?.group==='expense'?'직접경비':'운영경비';
-    outsData.push([grp,cat?.label||o.catId,o.name||'',v,o.vatIncl?'포함':'별도',sup]);
+    ws3Data.push([grp,cat?.label||o.catId,o.name||'',fmt(v),o.vatIncl?'포함':'별도',fmt(sup),pct(sup,r.rv)]);
   });
-  outsData.push([]);
-  outsData.push(["TOTAL","","",r.os+r.svc+r.opex,"",r.os+r.svc+r.opex]);
-  const outsWS=XLSX.utils.aoa_to_sheet(outsData);
-  outsWS['!cols']=[{wch:16},{wch:12},{wch:20},{wch:16},{wch:8},{wch:16}];
-  XLSX.utils.book_append_sheet(WB,outsWS,'비용상세');
+  ws3Data.push([]);
+  ws3Data.push(['TOTAL','','','',fmt(r.os+r.svc+r.opex),'','']);
+  ws3Data.push([]);
+  ws3Data.push(["d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭",'','','','','','']);
 
-  // ── 파일 저장 (YYMMDD_제목 규칙 - d'strict 규칙) ──
+  const ws3=XLSX.utils.aoa_to_sheet(ws3Data);
+  ws3['!cols']=[{wch:16},{wch:12},{wch:22},{wch:16},{wch:6},{wch:16},{wch:8}];
+  ws3['!rows']=ws3Data.map((_,i)=>({hpx:i===0?30:18}));
+  XLSX.utils.book_append_sheet(WB,ws3,'비용구조');
+
+  // ── 파일 저장 (YYMMDD_제목 - d'strict 규칙) ──
   const dt=new Date();
   const yy=String(dt.getFullYear()).slice(2);
   const mm=String(dt.getMonth()+1).padStart(2,'0');
   const dd=String(dt.getDate()).padStart(2,'0');
   const fname=`${yy}${mm}${dd}_${(S.projectName||'B2G_시뮬레이터').replace(/['/]/g,'')}.xlsx`;
   XLSX.writeFile(WB,fname);
-  showToast('✅ Excel 파일 다운로드 완료 (d\'strict 서식 적용)');
+  showToast("✅ Excel 파일 다운로드 완료 (d'strict 서식 · 3시트 구성)");
 }
 
 /* ── PPTX (d'strict 서식) ── */
@@ -2646,12 +2795,11 @@ async function exportDstrictPPTX(){
   if(!BASELINE&&!confirm('변경 적용 전입니다. 현재 값으로 추출하시겠습니까?'))return;
   const r=compute(S.bid), mms=getMMs();
 
-  // PptxGenJS 로드
   if(!window.PptxGenJS){
     await new Promise((res,rej)=>{
       const s=document.createElement('script');
       s.src='https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js';
-      s.onload=res;s.onerror=rej;document.head.appendChild(s);
+      s.onload=res; s.onerror=rej; document.head.appendChild(s);
     });
   }
 
@@ -2659,137 +2807,186 @@ async function exportDstrictPPTX(){
   pptx.layout='LAYOUT_16x9';
 
   // d'strict 서식 상수
-  const KO_FONT="Noto Sans CJK KR"; // 국문
-  const EN_FONT="Uniform";           // 영문
-  const DARK_BG="1a1a18";
-  const WHITE="FFFFFF";
-  const ACCENT="FFC000";
-  const cnColor=r.cn>=0?(r.cnr>=20?"00B050":"CC9900"):"C00000";
+  const KO='Noto Sans CJK KR';
+  const EN='Uniform';
+  const DARK='1a1a18';
+  const WHITE='FFFFFF';
+  const ACCENT='FFC000';
+  const GRAY='F6F5F0';
+  const MUTED='73726C';
+  const fl=n=>Math.floor(n);
+  const fmt=v=>typeof v==='number'?v.toLocaleString('ko-KR'):String(v??'');
+  const pct=(v,b)=>b>0?((v/b)*100).toFixed(1)+'%':'-';
+  const totalMM=S.labor.reduce((s,lr)=>s+lr.count*lr.mm,0);
+  const cnColor=r.cn>=0?(r.cnr>=20?'00B050':'CC9900'):'C00000';
+  const gpColor=r.gp>=0?'00B050':'C00000';
+  const today=new Date().toLocaleDateString('ko-KR');
 
-  // ── 슬라이드 1: 타이틀 ──
+  // ─ 공통 테이블 옵션 ─
+  const tblOpt=(x,y,w)=>({x,y,w,border:{type:'solid',color:'E8E6DF',pt:0.5},fontSize:11,fontFace:KO});
+  const hdr=(text,opts={})=>({text,options:{fontFace:KO,bold:true,color:WHITE,fill:DARK,align:'center',charSpacing:-0.6,...opts}});
+  const cell=(text,opts={})=>({text:String(text??''),options:{fontFace:opts.en?EN:KO,color:opts.color||'1a1a18',bold:opts.bold||false,align:opts.align||'left',fill:opts.fill||'FFFFFF',charSpacing:opts.en?0:-0.6,...opts}});
+  const cellR=(text,opts={})=>cell(text,{...opts,align:'right',en:true});
+  const cellC=(text,opts={})=>cell(text,{...opts,align:'center'});
+
+  /* ═══════════════════════════
+     슬라이드 1: 타이틀
+  ═══════════════════════════ */
   const s1=pptx.addSlide();
-  s1.background={color:DARK_BG};
-  // 반투명 박스 (d'strict 규칙: 배경 위 텍스트)
-  s1.addShape(pptx.ShapeType.rect,{x:0.3,y:0.8,w:9.4,h:1.2,fill:{color:"000000",transparency:40}});
-  // 영문 제목 ALL CAPITALS (d'strict 규칙)
-  s1.addText([
-    {text:"B2G SIMULATOR", options:{fontFace:EN_FONT,bold:true,charSpacing:0}},
-  ],{x:0.5,y:0.9,w:9,h:0.6,fontSize:32,color:WHITE});
-  s1.addText([
-    {text:S.projectName||"프로젝트명 미입력", options:{fontFace:KO_FONT,bold:false,charSpacing:-2.0}},
-  ],{x:0.5,y:1.5,w:9,h:0.4,fontSize:18,color:"rgba(255,255,255,0.7)"});
-  s1.addText([
-    {text:"d'strict  ", options:{fontFace:KO_FONT,fontSize:14,color:"FFFFFF",charSpacing:-0.6}},
-    {text:new Date().toLocaleDateString('ko-KR'), options:{fontFace:EN_FONT,fontSize:14,color:"FFFFFF"}},
-  ],{x:0.5,y:5.8,w:9,h:0.3});
+  s1.background={color:DARK};
+  s1.addShape(pptx.ShapeType.rect,{x:0,y:0,w:10,h:1.2,fill:{color:'000000'}});
+  s1.addText([{text:"d'strict B2G SIMULATOR",options:{fontFace:EN,bold:true,charSpacing:2}}],
+    {x:0.4,y:0.1,w:9.2,h:0.7,fontSize:28,color:WHITE});
+  s1.addText([{text:S.projectName||'프로젝트명 미입력',options:{fontFace:KO,charSpacing:-1.0}}],
+    {x:0.4,y:0.8,w:9.2,h:0.35,fontSize:15,color:'rgba(255,255,255,0.65)'});
 
-  // ── 슬라이드 2: KPI 요약 ──
-  const s2=pptx.addSlide();
-  s2.background={color:"F6F5F0"};
-  s2.addText([
-    {text:"손익 요약", options:{fontFace:KO_FONT,bold:true,charSpacing:-1.0}},
-  ],{x:0.3,y:0.2,w:9.4,h:0.5,fontSize:22,color:"1a1a18"});
-
-  // KPI 카드 6개 (2행 3열)
+  // KPI 카드 2행
   const kpis=[
-    {k:"투찰금액",v:fmtW(r.ct),sub:"VAT포함",color:"1a1a18"},
-    {k:"매출액",v:fmtW(r.rv),sub:"VAT별도",color:"185FA5"},
-    {k:"직접비",v:fmtW(r.os),sub:"외주 직접비",color:"534AB7"},
-    {k:"공헌이익",v:fmtW(r.cn),sub:r.cnr.toFixed(1)+"%",color:cnColor},
-    {k:"공헌이익률",v:r.cnr.toFixed(2)+"%",sub:r.cnr>=20?"목표 달성":r.cn>=0?"주의":"적자",color:cnColor},
-    {k:"매출총이익",v:fmtW(r.gp),sub:r.gpr.toFixed(1)+"%",color:r.gp>=0?"00B050":"C00000"},
+    {k:'투찰금액',v:fmt(r.ct),sub:'VAT포함',c:DARK,bg:'F0F0F0'},
+    {k:'매출액',v:fmt(r.rv),sub:'VAT별도',c:'185FA5',bg:'E6F1FB'},
+    {k:'직접비+경비',v:fmt(r.os+r.svc+r.opex),sub:pct(r.os+r.svc+r.opex,r.rv),c:'534AB7',bg:'EEEDFE'},
+    {k:'공헌이익',v:fmt(r.cn),sub:r.cnr.toFixed(2)+'%',c:cnColor,bg:r.cn>=0?'EAF3DE':'FCEBEB'},
+    {k:'공헌이익률',v:r.cnr.toFixed(2)+'%',sub:r.cnr>=20?'목표 달성':r.cn>=0?'주의':'적자',c:cnColor,bg:r.cn>=0?'EAF3DE':'FCEBEB'},
+    {k:'매출총이익',v:fmt(r.gp),sub:r.gpr.toFixed(2)+'%',c:gpColor,bg:r.gp>=0?'EAF3DE':'FCEBEB'},
   ];
   kpis.forEach((k,i)=>{
-    const x=0.3+(i%3)*3.2, y=0.9+Math.floor(i/3)*1.4;
-    s2.addShape(pptx.ShapeType.rect,{x,y,w:3.0,h:1.2,fill:{color:"FFFFFF"},line:{color:"E8E6DF",width:1}});
-    s2.addText([{text:k.k,options:{fontFace:KO_FONT,fontSize:11,color:"73726c",charSpacing:-0.6}}],{x:x+0.1,y:y+0.1,w:2.8,h:0.3});
-    s2.addText([{text:k.v,options:{fontFace:EN_FONT,fontSize:18,bold:true,color:k.color}}],{x:x+0.1,y:y+0.38,w:2.8,h:0.5});
-    s2.addText([{text:k.sub,options:{fontFace:KO_FONT,fontSize:10,color:"A3A29C",charSpacing:-0.6}}],{x:x+0.1,y:y+0.88,w:2.8,h:0.3});
+    const x=0.25+(i%3)*3.2, y=1.35+Math.floor(i/3)*1.45;
+    s1.addShape(pptx.ShapeType.rect,{x,y,w:3.1,h:1.3,fill:{color:k.bg},line:{color:'E8E6DF',width:0.5}});
+    s1.addText([{text:k.k,options:{fontFace:KO,fontSize:11,color:MUTED,charSpacing:-0.6}}],{x:x+0.12,y:y+0.08,w:2.9,h:0.28});
+    s1.addText([{text:k.v,options:{fontFace:EN,fontSize:19,bold:true,color:k.c}}],{x:x+0.12,y:y+0.36,w:2.9,h:0.55});
+    s1.addText([{text:k.sub,options:{fontFace:KO,fontSize:10,color:'A3A29C',charSpacing:-0.6}}],{x:x+0.12,y:y+0.94,w:2.9,h:0.28});
   });
+  s1.addText([{text:"d'strict  "+today,options:{fontFace:KO,fontSize:11,color:'A3A29C',charSpacing:-0.6}}],
+    {x:0.4,y:5.85,w:9.2,h:0.2});
 
-  // ── 슬라이드 3: 손익계산서 ──
+  /* ═══════════════════════════
+     슬라이드 2: 손익 계산서
+  ═══════════════════════════ */
+  const s2=pptx.addSlide();
+  s2.background={color:GRAY};
+  s2.addShape(pptx.ShapeType.rect,{x:0,y:0,w:10,h:0.55,fill:{color:DARK}});
+  s2.addText([{text:'손익 계산서',options:{fontFace:KO,bold:true,charSpacing:-1.0}}],
+    {x:0.3,y:0.05,w:7,h:0.45,fontSize:20,color:WHITE});
+  s2.addText([{text:S.projectName||'',options:{fontFace:KO,fontSize:11,charSpacing:-0.6}}],
+    {x:5,y:0.08,w:4.7,h:0.38,fontSize:11,color:'AAAAAA',align:'right'});
+
+  const pnlTbl=[[hdr('계정과목',{align:'left'}),hdr('금액(원)'),hdr('비율(%)')]];
+  [
+    {l:'매출액 (VAT별도)',v:r.rv,  b:true, c:'185FA5'},
+    {l:'  (-) 직접비(외주비)',v:r.os,  b:false,c:DARK},
+    ...OCATS.filter(c=>c.group==='direct').map(cat=>{
+      const t=S.outs.filter(o=>o.catId===cat.id).reduce((s,o)=>{const v=parseFloat(o.amount)||0;return s+(o.vatIncl?fl(v/1.1):v);},0);
+      return t>0?{l:'    '+cat.label,v:t,b:false,c:MUTED,sm:true}:null;
+    }).filter(Boolean),
+    {l:'  (-) 직접경비',v:r.svc,  b:false,c:DARK},
+    {l:'  (-) 운영경비',v:r.opex, b:false,c:DARK},
+    {l:'공헌이익',      v:r.cn,   b:true, c:cnColor, fill:r.cn>=0?'EAF3DE':'FCEBEB'},
+    {l:'  공헌이익률',  v:null,   b:true, c:cnColor, fill:r.cn>=0?'EAF3DE':'FCEBEB', pctVal:r.cnr},
+    {l:'  (-) 내부인건비',v:r.lc, b:false,c:DARK},
+    {l:'매출총이익',    v:r.gp,   b:true, c:gpColor, fill:r.gp>=0?'EAF3DE':'FCEBEB'},
+    {l:'  매출총이익률',v:null,   b:true, c:gpColor, fill:r.gp>=0?'EAF3DE':'FCEBEB', pctVal:r.gpr},
+  ].forEach(row=>{
+    const f=row.fill||'FFFFFF';
+    const fs=row.sm?9:11;
+    pnlTbl.push([
+      {text:row.l,options:{fontFace:KO,bold:row.b,color:row.c,fill:f,align:'left',fontSize:fs,charSpacing:-0.6}},
+      {text:row.v!=null?fmt(row.v):'',options:{fontFace:EN,bold:row.b,color:row.c,fill:f,align:'right',fontSize:fs}},
+      {text:row.pctVal!=null?row.pctVal.toFixed(2)+'%':(row.v!=null&&r.rv>0?pct(row.v,r.rv):'-'),
+       options:{fontFace:EN,bold:row.b,color:row.c,fill:f,align:'center',fontSize:fs}},
+    ]);
+  });
+  s2.addTable(pnlTbl,{...tblOpt(0.3,0.65,9.4),rowH:0.36,firstRow:false});
+
+  /* ═══════════════════════════
+     슬라이드 3: M/M 구성비
+  ═══════════════════════════ */
   const s3=pptx.addSlide();
-  s3.background={color:"F6F5F0"};
-  s3.addText([{text:"손익 계산서",options:{fontFace:KO_FONT,bold:true,charSpacing:-1.0}}],
-    {x:0.3,y:0.2,w:9.4,h:0.5,fontSize:22,color:"1a1a18"});
+  s3.background={color:GRAY};
+  s3.addShape(pptx.ShapeType.rect,{x:0,y:0,w:10,h:0.55,fill:{color:DARK}});
+  s3.addText([{text:'M/M 구성비',options:{fontFace:KO,bold:true,charSpacing:-1.0}}],
+    {x:0.3,y:0.05,w:7,h:0.45,fontSize:20,color:WHITE});
+  s3.addText([{text:'총 '+totalMM.toFixed(1)+' M/M  /  '+S.labor.length+'명',options:{fontFace:EN,fontSize:14,bold:true}}],
+    {x:5.5,y:0.08,w:4.2,h:0.38,fontSize:14,color:ACCENT,align:'right'});
 
-  const pnlRows=[
-    {label:"매출액 (VAT별도)",  val:fmtW(r.rv),   pct:"100%",     bold:true},
-    {label:"(-) 직접비(외주비)",val:fmtW(r.os),   pct:r.rv>0?((r.os/r.rv)*100).toFixed(1)+"%":""},
-    {label:"(-) 직접경비",      val:fmtW(r.svc),  pct:r.rv>0?((r.svc/r.rv)*100).toFixed(1)+"%":""},
-    {label:"(-) 운영경비",      val:fmtW(r.opex), pct:r.rv>0?((r.opex/r.rv)*100).toFixed(1)+"%":""},
-    {label:"공헌이익",          val:fmtW(r.cn),   pct:r.cnr.toFixed(1)+"%", bold:true, color:cnColor},
-    {label:"공헌이익률",        val:"",            pct:r.cnr.toFixed(2)+"%", bold:true, color:cnColor},
-    {label:"(-) 내부인건비",    val:fmtW(r.lc),   pct:r.rv>0?((r.lc/r.rv)*100).toFixed(1)+"%":""},
-    {label:"매출총이익",        val:fmtW(r.gp),   pct:r.gpr.toFixed(1)+"%", bold:true, color:r.gp>=0?"00B050":"C00000"},
-    {label:"매출총이익률",      val:"",            pct:r.gpr.toFixed(2)+"%", bold:true, color:r.gp>=0?"00B050":"C00000"},
-  ];
-
-  const tblData=[[
-    {text:"항목",      options:{fontFace:KO_FONT,bold:true,color:WHITE,align:"center"}},
-    {text:"금액(원)",  options:{fontFace:KO_FONT,bold:true,color:WHITE,align:"right"}},
-    {text:"비율",      options:{fontFace:KO_FONT,bold:true,color:WHITE,align:"center"}},
-  ],...pnlRows.map(row=>[
-    {text:row.label, options:{fontFace:KO_FONT,bold:!!row.bold,color:row.color||"1a1a18",align:"left",charSpacing:-0.6}},
-    {text:row.val,   options:{fontFace:EN_FONT,  bold:!!row.bold,color:row.color||"1a1a18",align:"right"}},
-    {text:row.pct,   options:{fontFace:EN_FONT,  bold:!!row.bold,color:row.color||"73726c",align:"center"}},
-  ])];
-
-  s3.addTable(tblData,{
-    x:0.3,y:0.8,w:9.4,
-    rowH:0.42,
-    border:{type:"solid",color:"E8E6DF",pt:0.5},
-    fill:{color:"FFFFFF"},
-    fontFace:KO_FONT,fontSize:13,
-    firstRow:{fill:{color:"000000"},color:WHITE},
-  });
-
-  // ── 슬라이드 4: 투입 인력 ──
-  const s4=pptx.addSlide();
-  s4.background={color:"F6F5F0"};
-  s4.addText([{text:"투입 인력",options:{fontFace:KO_FONT,bold:true,charSpacing:-1.0}}],
-    {x:0.3,y:0.2,w:9.4,h:0.5,fontSize:22,color:"1a1a18"});
-  const totalMM=S.labor.reduce((s,lr)=>s+lr.count*lr.mm,0);
-  s4.addText([
-    {text:"총 "+totalMM.toFixed(1)+"MM",options:{fontFace:EN_FONT,fontSize:16,color:"185FA5",bold:true}},
-  ],{x:7,y:0.2,w:2.7,h:0.5,align:"right"});
-
-  const laborTbl=[[
-    {text:"직무",     options:{fontFace:KO_FONT,bold:true,color:WHITE,align:"center"}},
-    {text:"등급",     options:{fontFace:KO_FONT,bold:true,color:WHITE,align:"center"}},
-    {text:"인원",     options:{fontFace:KO_FONT,bold:true,color:WHITE,align:"center"}},
-    {text:"MM",       options:{fontFace:EN_FONT, bold:true,color:WHITE,align:"center"}},
-    {text:"M/M 단가", options:{fontFace:KO_FONT,bold:true,color:WHITE,align:"center"}},
-    {text:"소계(원)", options:{fontFace:KO_FONT,bold:true,color:WHITE,align:"center"}},
-  ],...S.labor.map(lr=>{
+  const mmTbl=[[hdr('직무'),hdr('등급'),hdr('인원'),hdr('M/M'),hdr('M/M 단가(원)'),hdr('소계(원)'),hdr('비율(%)')]];
+  S.labor.forEach((lr,i)=>{
     const g=mms[lr.grade];
     const role=(ROLES.find(rx=>rx.id===(lr.role||'dev'))||ROLES[4]).label;
-    return[
-      {text:role,             options:{fontFace:KO_FONT,align:"left",charSpacing:-0.6}},
-      {text:GD[lr.grade]?.label||lr.grade, options:{fontFace:KO_FONT,align:"center",charSpacing:-0.6}},
-      {text:String(lr.count), options:{fontFace:EN_FONT,align:"center"}},
-      {text:String(lr.mm),    options:{fontFace:EN_FONT,align:"center"}},
-      {text:fmtW(g.mm),       options:{fontFace:EN_FONT,align:"right"}},
-      {text:fmtW(fl(g.mm*lr.count*lr.mm)), options:{fontFace:EN_FONT,align:"right",bold:true}},
-    ];
-  })];
-
-  s4.addTable(laborTbl,{
-    x:0.3,y:0.8,w:9.4,rowH:0.42,
-    border:{type:"solid",color:"E8E6DF",pt:0.5},
-    fill:{color:"FFFFFF"},
-    fontSize:13,
-    firstRow:{fill:{color:"000000"},color:WHITE},
+    const sub=fl(g.mm*lr.count*lr.mm);
+    const bg=i%2===0?'FFFFFF':'FAFAF8';
+    mmTbl.push([
+      cell(role,{fill:bg}),
+      cellC(GD[lr.grade]?.label||lr.grade,{fill:bg}),
+      cellC(String(lr.count),{fill:bg,en:true}),
+      cellC(String(lr.mm),{fill:bg,en:true}),
+      cellR(fmt(g.mm),{fill:bg}),
+      cellR(fmt(sub),{fill:bg,bold:true}),
+      cellC(totalMM>0?((lr.count*lr.mm/totalMM)*100).toFixed(1)+'%':'-',{fill:bg,en:true}),
+    ]);
   });
+  // TOTAL 행
+  mmTbl.push([
+    cell('TOTAL',{bold:true,fill:ACCENT}),
+    cellC('',{fill:ACCENT}),cellC('',{fill:ACCENT}),
+    cellC(totalMM.toFixed(1),{fill:ACCENT,bold:true,en:true}),
+    cellC('',{fill:ACCENT}),
+    cellR(fmt(r.lc),{fill:ACCENT,bold:true}),
+    cellC('100%',{fill:ACCENT,bold:true,en:true}),
+  ]);
+  s3.addTable(mmTbl,{...tblOpt(0.3,0.65,9.4),rowH:0.38,firstRow:false});
 
-  // ── 파일 저장 (YYMMDD_제목 - d'strict 규칙) ──
+  /* ═══════════════════════════
+     슬라이드 4: 비용 구조 상세
+  ═══════════════════════════ */
+  const s4=pptx.addSlide();
+  s4.background={color:GRAY};
+  s4.addShape(pptx.ShapeType.rect,{x:0,y:0,w:10,h:0.55,fill:{color:DARK}});
+  s4.addText([{text:'직접비(외주비) / 직접경비 / 운영경비 비용 구조',options:{fontFace:KO,bold:true,charSpacing:-1.0}}],
+    {x:0.3,y:0.05,w:9.4,h:0.45,fontSize:18,color:WHITE});
+
+  // 좌: 요약  우: 세부 항목 (2컬럼)
+  // 좌측 요약 테이블
+  const sumTbl=[[hdr('구분'),hdr('금액(원)'),hdr('비율(%)')]];
+  [
+    {l:'직접비(외주비)', v:r.os,              c:'534AB7'},
+    {l:'직접경비',       v:r.svc,             c:'854F0B'},
+    {l:'운영경비',       v:r.opex,            c:'E67E22'},
+    {l:'TOTAL',          v:r.os+r.svc+r.opex, c:DARK, fill:ACCENT, bold:true},
+  ].forEach((row,i)=>{
+    const bg=row.fill||(i%2===0?'FFFFFF':'FAFAF8');
+    sumTbl.push([
+      cell(row.l,{fill:bg,bold:!!row.bold,color:row.c}),
+      cellR(fmt(row.v),{fill:bg,bold:!!row.bold}),
+      cellC(pct(row.v,r.rv),{fill:bg,bold:!!row.bold,en:true}),
+    ]);
+  });
+  s4.addTable(sumTbl,{...tblOpt(0.3,0.65,4.5),rowH:0.4,firstRow:false});
+
+  // 우측 세부 항목 테이블
+  const detTbl=[[hdr('구분'),hdr('카테고리'),hdr('항목명'),hdr('공급가액(원)')]];
+  S.outs.forEach((o,i)=>{
+    const v=parseFloat(o.amount)||0;
+    const sup=o.vatIncl?fl(v/1.1):v;
+    const cat=OCATS.find(c=>c.id===o.catId);
+    const grp=cat?.group==='direct'?'직접비':cat?.group==='expense'?'직접경비':'운영경비';
+    const bg=i%2===0?'FFFFFF':'FAFAF8';
+    detTbl.push([
+      cell(grp,{fill:bg,fontSize:10}),
+      cell(cat?.label||o.catId,{fill:bg,fontSize:10}),
+      cell(o.name||'-',{fill:bg,fontSize:10}),
+      cellR(fmt(sup),{fill:bg,fontSize:10,bold:true}),
+    ]);
+  });
+  s4.addTable(detTbl,{...tblOpt(5.0,0.65,4.7),rowH:0.36,firstRow:false});
+
+  // ── 저장 ──
   const dt=new Date();
   const yy=String(dt.getFullYear()).slice(2);
   const mm2=String(dt.getMonth()+1).padStart(2,'0');
   const dd=String(dt.getDate()).padStart(2,'0');
   const fname=`${yy}${mm2}${dd}_${(S.projectName||'B2G_시뮬레이터').replace(/['/]/g,'')}.pptx`;
   pptx.writeFile({fileName:fname});
-  showToast("✅ PowerPoint 파일 다운로드 완료 (d'strict 서식 적용)");
+  showToast("✅ PowerPoint 다운로드 완료 (4슬라이드 · d'strict 서식)");
 }
 
 /* ── DOCX (d'strict 서식) ── */
@@ -2797,171 +2994,219 @@ async function exportDstrictDOCX(){
   if(!BASELINE&&!confirm('변경 적용 전입니다. 현재 값으로 추출하시겠습니까?'))return;
   const r=compute(S.bid), mms=getMMs();
 
-  // docx.js 로드
   if(!window.docx){
     await new Promise((res,rej)=>{
       const s=document.createElement('script');
       s.src='https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.umd.min.js';
-      s.onload=res;s.onerror=rej;document.head.appendChild(s);
+      s.onload=res; s.onerror=rej; document.head.appendChild(s);
     });
   }
 
   const {Document,Paragraph,TextRun,Table,TableRow,TableCell,
          WidthType,AlignmentType,BorderStyle,HeadingLevel,
-         ShadingType,Packer}=docx;
+         ShadingType,Packer,UnderlineType}=docx;
 
   // d'strict 서식 상수
-  // 국문 자간: -0.6pt = -12 half-points (1pt=20)
-  const KO_SPACING=-12;
-  const KO_FONT="Malgun Gothic";
-  const EN_FONT="Arial";
+  const KO_SP=-12; // 국문 자간 -0.6pt = -12 half-pts
+  const KO='Malgun Gothic';
+  const EN='Arial';
+  const fl=n=>Math.floor(n);
+  const fmt=v=>typeof v==='number'?v.toLocaleString('ko-KR'):String(v??'');
+  const pct=(v,b)=>b>0?((v/b)*100).toFixed(1)+'%':'-';
+  const totalMM=S.labor.reduce((s,lr)=>s+lr.count*lr.mm,0);
+  const today=new Date().toLocaleDateString('ko-KR');
+  const cnColor=r.cn>=0?(r.cnr>=20?'00B050':'CC9900'):'C00000';
+  const gpColor=r.gp>=0?'00B050':'C00000';
 
-  // 헬퍼: 국문 TextRun
-  const koRun=(text,opts={})=>new TextRun({text,font:KO_FONT,characterSpacing:KO_SPACING,...opts});
-  // 헬퍼: 영문 TextRun
-  const enRun=(text,opts={})=>new TextRun({text,font:EN_FONT,...opts});
+  // 헬퍼
+  const ko=(text,opts={})=>new TextRun({text,font:KO,characterSpacing:KO_SP,...opts});
+  const en=(text,opts={})=>new TextRun({text,font:EN,...opts});
+  const border={style:BorderStyle.SINGLE,size:4,color:'E8E6DF'};
+  const cb={top:border,bottom:border,left:border,right:border};
+  const cell=(txt,opts={})=>new TableCell({
+    children:[new Paragraph({
+      children:[opts.en?en(String(txt??''),{bold:opts.bold,size:opts.sz||20,color:opts.color||'000000'}):
+                          ko(String(txt??''),{bold:opts.bold,size:opts.sz||20,color:opts.color||'000000'})],
+      alignment:opts.align||AlignmentType.LEFT,
+    })],
+    shading:{type:ShadingType.SOLID,fill:opts.fill||'FFFFFF'},
+    borders:cb,
+    width:opts.w?{size:opts.w,type:WidthType.PERCENTAGE}:undefined,
+  });
+  const hdrCell=(txt,w)=>new TableCell({
+    children:[new Paragraph({
+      children:[ko(txt,{bold:true,size:20,color:'FFFFFF'})],
+      alignment:AlignmentType.CENTER,
+    })],
+    shading:{type:ShadingType.SOLID,fill:'000000'},
+    borders:cb,
+    width:w?{size:w,type:WidthType.PERCENTAGE}:undefined,
+  });
+  const totalCell=(txt,opts={})=>new TableCell({
+    children:[new Paragraph({
+      children:[opts.en?en(String(txt??''),{bold:true,size:20,color:'000000'}):
+                         ko(String(txt??''),{bold:true,size:20,color:'000000'})],
+      alignment:opts.align||AlignmentType.LEFT,
+    })],
+    shading:{type:ShadingType.SOLID,fill:'FFC000'},
+    borders:{top:{style:BorderStyle.DOUBLE,size:6,color:'000000'},bottom:border,left:border,right:border},
+  });
 
-  // 타이틀 단락
+  // 섹션 제목 단락
+  const secTitle=(text)=>new Paragraph({
+    children:[ko(text,{bold:true,size:26,characterSpacing:-14})],
+    spacing:{before:240,after:80},
+    shading:{type:ShadingType.SOLID,fill:'000000'},
+    indent:{left:200},
+  });
+
+  // ── 타이틀 ──
   const titlePara=new Paragraph({
     children:[
-      koRun("d'strict B2G 시뮬레이터 손익 보고서",{bold:true,size:28,color:"FFFFFF",characterSpacing:-14}),
+      ko("d'strict B2G Simulator Vol.1.3.1",{bold:true,size:30,color:'FFFFFF',characterSpacing:-14}),
+      en('  '+today,{size:20,color:'AAAAAA'}),
     ],
-    shading:{type:ShadingType.SOLID,fill:"000000"},
-    spacing:{before:0,after:200},
+    shading:{type:ShadingType.SOLID,fill:'000000'},
+    spacing:{before:0,after:80},
+  });
+  const projPara=new Paragraph({
+    children:[
+      ko('프로젝트: ',{bold:true,size:22}),
+      ko(S.projectName||'(미입력)',{size:22}),
+      en('   투찰율: ',{size:22,bold:true}),
+      en(S.bid.toFixed(2)+'%',{size:22,color:'185FA5',bold:true}),
+    ],
+    spacing:{before:80,after:200},
   });
 
-  // 프로젝트 정보
-  const infoRows=[
-    new Paragraph({children:[
-      koRun("프로젝트명: ",{bold:true,size:22}),
-      koRun(S.projectName||"(미입력)",{size:22}),
-    ],spacing:{before:100,after:50}}),
-    new Paragraph({children:[
-      koRun("투찰율: ",{bold:true,size:22}),
-      enRun(S.bid.toFixed(2)+"%",{bold:true,size:22,color:"185FA5"}),
-      koRun("  생성일: ",{bold:true,size:22}),
-      enRun(new Date().toLocaleDateString('ko-KR'),{size:22}),
-    ],spacing:{before:50,after:200}}),
-  ];
-
-  // 손익계산서 제목
-  const pnlTitle=new Paragraph({
-    heading:HeadingLevel.HEADING_2,
-    children:[koRun("손익 계산서",{bold:true,size:24,characterSpacing:-14})],
-    spacing:{before:200,after:100},
-  });
-
-  // 손익계산서 테이블
+  /* ── 섹션 1: 손익 계산서 ── */
   const pnlItems=[
-    {label:"매출액 (VAT별도)",   val:fmtW(r.rv),   pct:"100%",     bold:true},
-    {label:"(-) 직접비(외주비)", val:fmtW(r.os),   pct:r.rv>0?((r.os/r.rv)*100).toFixed(1)+"%":""},
-    {label:"(-) 직접경비",       val:fmtW(r.svc),  pct:r.rv>0?((r.svc/r.rv)*100).toFixed(1)+"%":""},
-    {label:"(-) 운영경비",       val:fmtW(r.opex), pct:r.rv>0?((r.opex/r.rv)*100).toFixed(1)+"%":""},
-    {label:"공헌이익",           val:fmtW(r.cn),   pct:r.cnr.toFixed(2)+"%", bold:true, color:r.cn>=0?"00B050":"C00000"},
-    {label:"공헌이익률",         val:"",            pct:r.cnr.toFixed(2)+"%", bold:true, color:r.cn>=0?"00B050":"C00000"},
-    {label:"(-) 내부인건비",     val:fmtW(r.lc),   pct:r.rv>0?((r.lc/r.rv)*100).toFixed(1)+"%":""},
-    {label:"매출총이익",         val:fmtW(r.gp),   pct:r.gpr.toFixed(2)+"%", bold:true, color:r.gp>=0?"00B050":"C00000"},
-    {label:"매출총이익률",       val:"",            pct:r.gpr.toFixed(2)+"%", bold:true, color:r.gp>=0?"00B050":"C00000"},
+    {l:'매출액 (VAT별도)',    v:r.rv,   b:true,  c:'185FA5'},
+    {l:'  (-) 직접비(외주비)',v:r.os,   b:false, c:'000000'},
+    ...OCATS.filter(c=>c.group==='direct').map(cat=>{
+      const t=S.outs.filter(o=>o.catId===cat.id).reduce((s,o)=>{const v=parseFloat(o.amount)||0;return s+(o.vatIncl?fl(v/1.1):v);},0);
+      return t>0?{l:'    '+cat.label,v:t,b:false,c:'73726C',sm:true}:null;
+    }).filter(Boolean),
+    {l:'  (-) 직접경비',      v:r.svc,  b:false, c:'000000'},
+    {l:'  (-) 운영경비',      v:r.opex, b:false, c:'000000'},
+    {l:'공헌이익',            v:r.cn,   b:true,  c:cnColor, fill:r.cn>=0?'EAF3DE':'FCEBEB'},
+    {l:'  공헌이익률',        v:null,   b:true,  c:cnColor, fill:r.cn>=0?'EAF3DE':'FCEBEB', pv:r.cnr},
+    {l:'  (-) 내부인건비',    v:r.lc,   b:false, c:'000000'},
+    {l:'매출총이익',          v:r.gp,   b:true,  c:gpColor, fill:r.gp>=0?'EAF3DE':'FCEBEB'},
+    {l:'  매출총이익률',      v:null,   b:true,  c:gpColor, fill:r.gp>=0?'EAF3DE':'FCEBEB', pv:r.gpr},
   ];
 
-  const borderDef={style:BorderStyle.SINGLE,size:4,color:"E8E6DF"};
-  const cellBorder={top:borderDef,bottom:borderDef,left:borderDef,right:borderDef};
-
-  const headerRow=new TableRow({children:[
-    new TableCell({children:[new Paragraph({children:[koRun("항목",{bold:true,color:"FFFFFF",size:20,characterSpacing:-12})]})],
-      shading:{type:ShadingType.SOLID,fill:"000000"},borders:cellBorder,width:{size:60,type:WidthType.PERCENTAGE}}),
-    new TableCell({children:[new Paragraph({children:[koRun("금액(원)",{bold:true,color:"FFFFFF",size:20,characterSpacing:-12})],alignment:AlignmentType.CENTER})],
-      shading:{type:ShadingType.SOLID,fill:"000000"},borders:cellBorder,width:{size:25,type:WidthType.PERCENTAGE}}),
-    new TableCell({children:[new Paragraph({children:[koRun("비율",{bold:true,color:"FFFFFF",size:20,characterSpacing:-12})],alignment:AlignmentType.CENTER})],
-      shading:{type:ShadingType.SOLID,fill:"000000"},borders:cellBorder,width:{size:15,type:WidthType.PERCENTAGE}}),
-  ],tableHeader:true});
-
-  const dataRows=pnlItems.map((item,i)=>new TableRow({children:[
-    new TableCell({children:[new Paragraph({children:[
-      koRun(item.label,{bold:!!item.bold,size:20,color:item.color||"000000",characterSpacing:-12}),
-    ]})],borders:cellBorder,shading:{type:ShadingType.SOLID,fill:i%2===0?"FFFFFF":"FAFAF8"},width:{size:60,type:WidthType.PERCENTAGE}}),
-    new TableCell({children:[new Paragraph({children:[
-      enRun(item.val,{bold:!!item.bold,size:20,color:item.color||"000000"}),
-    ],alignment:AlignmentType.RIGHT})],borders:cellBorder,shading:{type:ShadingType.SOLID,fill:i%2===0?"FFFFFF":"FAFAF8"},width:{size:25,type:WidthType.PERCENTAGE}}),
-    new TableCell({children:[new Paragraph({children:[
-      enRun(item.pct,{bold:!!item.bold,size:20,color:item.color||"73726C"}),
-    ],alignment:AlignmentType.CENTER})],borders:cellBorder,shading:{type:ShadingType.SOLID,fill:i%2===0?"FFFFFF":"FAFAF8"},width:{size:15,type:WidthType.PERCENTAGE}}),
-  ]}));
-
-  // TOTAL 행 (d'strict: FFC000 배경, 이중 테두리)
-  const totalBorder={style:BorderStyle.DOUBLE,size:6,color:"000000"};
-  const totalRow=new TableRow({children:[
-    new TableCell({children:[new Paragraph({children:[koRun("TOTAL 매출액",{bold:true,size:20,characterSpacing:-12})]})],
-      shading:{type:ShadingType.SOLID,fill:"FFC000"},borders:{top:totalBorder,bottom:borderDef,left:borderDef,right:borderDef}}),
-    new TableCell({children:[new Paragraph({children:[enRun(fmtW(r.rv),{bold:true,size:20})],alignment:AlignmentType.RIGHT})],
-      shading:{type:ShadingType.SOLID,fill:"FFC000"},borders:{top:totalBorder,bottom:borderDef,left:borderDef,right:borderDef}}),
-    new TableCell({children:[new Paragraph({children:[enRun("100%",{bold:true,size:20})],alignment:AlignmentType.CENTER})],
-      shading:{type:ShadingType.SOLID,fill:"FFC000"},borders:{top:totalBorder,bottom:borderDef,left:borderDef,right:borderDef}}),
-  ]});
-
-  const pnlTable=new Table({rows:[headerRow,...dataRows,totalRow],width:{size:100,type:WidthType.PERCENTAGE}});
-
-  // 인건비 섹션 제목
-  const laborTitle=new Paragraph({
-    heading:HeadingLevel.HEADING_2,
-    children:[koRun("투입 인력 상세",{bold:true,size:24,characterSpacing:-14})],
-    spacing:{before:300,after:100},
+  const pnlHdr=new TableRow({children:[hdrCell('계정과목',55),hdrCell('금액(원)',30),hdrCell('비율(%)',15)],tableHeader:true});
+  const pnlRows=pnlItems.map((item,i)=>{
+    const bg=item.fill||(i%2===0?'FFFFFF':'FAFAF8');
+    const sz=item.sm?18:20;
+    return new TableRow({children:[
+      new TableCell({children:[new Paragraph({children:[ko(item.l,{bold:item.b,size:sz,color:item.c,characterSpacing:KO_SP})]})],
+        shading:{type:ShadingType.SOLID,fill:bg},borders:cb,width:{size:55,type:WidthType.PERCENTAGE}}),
+      new TableCell({children:[new Paragraph({children:[en(item.v!=null?fmt(item.v):'',{bold:item.b,size:sz,color:item.c})],alignment:AlignmentType.RIGHT})],
+        shading:{type:ShadingType.SOLID,fill:bg},borders:cb,width:{size:30,type:WidthType.PERCENTAGE}}),
+      new TableCell({children:[new Paragraph({children:[en(item.pv!=null?item.pv.toFixed(2)+'%':(item.v!=null&&r.rv>0?pct(item.v,r.rv):'-'),{bold:item.b,size:sz,color:item.c})],alignment:AlignmentType.CENTER})],
+        shading:{type:ShadingType.SOLID,fill:bg},borders:cb,width:{size:15,type:WidthType.PERCENTAGE}}),
+    ]});
   });
+  const pnlTotal=new TableRow({children:[
+    totalCell('TOTAL  매출액',{w:55}),totalCell(fmt(r.rv),{en:true,align:AlignmentType.RIGHT}),totalCell('100%',{en:true,align:AlignmentType.CENTER}),
+  ]});
+  const pnlTable=new Table({rows:[pnlHdr,...pnlRows,pnlTotal],width:{size:100,type:WidthType.PERCENTAGE}});
 
-  // 인건비 테이블
-  const laborHdr=new TableRow({children:[
-    ["직무","등급","인원","MM","M/M 단가(원)","소계(원)"].map(h=>
-      new TableCell({children:[new Paragraph({children:[koRun(h,{bold:true,color:"FFFFFF",size:20,characterSpacing:-12})],alignment:AlignmentType.CENTER})],
-        shading:{type:ShadingType.SOLID,fill:"000000"},borders:cellBorder}))
-  ].flat(),tableHeader:true});
-
-  const laborDataRows=S.labor.map((lr,i)=>{
+  /* ── 섹션 2: M/M 구성비 ── */
+  const mmHdr=new TableRow({children:['직무','등급','인원','M/M','M/M 단가(원)','소계(원)','비율(%)'].map(h=>hdrCell(h)),tableHeader:true});
+  const mmRows=S.labor.map((lr,i)=>{
     const g=mms[lr.grade];
     const role=(ROLES.find(rx=>rx.id===(lr.role||'dev'))||ROLES[4]).label;
-    const cells=[
-      koRun(role,{size:20,characterSpacing:-12}),
-      koRun(GD[lr.grade]?.label||lr.grade,{size:20,characterSpacing:-12}),
-      enRun(String(lr.count),{size:20}),
-      enRun(String(lr.mm),{size:20}),
-      enRun(fmtW(g.mm),{size:20}),
-      enRun(fmtW(fl(g.mm*lr.count*lr.mm)),{bold:true,size:20}),
-    ];
-    const aligns=[AlignmentType.LEFT,AlignmentType.CENTER,AlignmentType.CENTER,
-                  AlignmentType.CENTER,AlignmentType.RIGHT,AlignmentType.RIGHT];
-    return new TableRow({children:cells.map((c,ci)=>
-      new TableCell({children:[new Paragraph({children:[c],alignment:aligns[ci]})],
-        shading:{type:ShadingType.SOLID,fill:i%2===0?"FFFFFF":"FAFAF8"},borders:cellBorder}))});
+    const sub=fl(g.mm*lr.count*lr.mm);
+    const bg=i%2===0?'FFFFFF':'FAFAF8';
+    return new TableRow({children:[
+      new TableCell({children:[new Paragraph({children:[ko(role,{size:20})]})],shading:{type:ShadingType.SOLID,fill:bg},borders:cb}),
+      new TableCell({children:[new Paragraph({children:[ko(GD[lr.grade]?.label||lr.grade,{size:20})],alignment:AlignmentType.CENTER})],shading:{type:ShadingType.SOLID,fill:bg},borders:cb}),
+      new TableCell({children:[new Paragraph({children:[en(String(lr.count),{size:20})],alignment:AlignmentType.CENTER})],shading:{type:ShadingType.SOLID,fill:bg},borders:cb}),
+      new TableCell({children:[new Paragraph({children:[en(String(lr.mm),{size:20})],alignment:AlignmentType.CENTER})],shading:{type:ShadingType.SOLID,fill:bg},borders:cb}),
+      new TableCell({children:[new Paragraph({children:[en(fmt(g.mm),{size:20})],alignment:AlignmentType.RIGHT})],shading:{type:ShadingType.SOLID,fill:bg},borders:cb}),
+      new TableCell({children:[new Paragraph({children:[en(fmt(sub),{bold:true,size:20})],alignment:AlignmentType.RIGHT})],shading:{type:ShadingType.SOLID,fill:bg},borders:cb}),
+      new TableCell({children:[new Paragraph({children:[en(totalMM>0?((lr.count*lr.mm/totalMM)*100).toFixed(1)+'%':'-',{size:20})],alignment:AlignmentType.CENTER})],shading:{type:ShadingType.SOLID,fill:bg},borders:cb}),
+    ]});
   });
+  const mmTotal=new TableRow({children:[
+    totalCell('TOTAL'),totalCell(''),totalCell(''),
+    totalCell(totalMM.toFixed(1)+' M/M',{en:true,align:AlignmentType.CENTER}),
+    totalCell(''),
+    totalCell(fmt(r.lc),{en:true,align:AlignmentType.RIGHT}),
+    totalCell('100%',{en:true,align:AlignmentType.CENTER}),
+  ]});
+  const mmTable=new Table({rows:[mmHdr,...mmRows,mmTotal],width:{size:100,type:WidthType.PERCENTAGE}});
 
-  const laborTable=new Table({rows:[laborHdr,...laborDataRows],width:{size:100,type:WidthType.PERCENTAGE}});
+  /* ── 섹션 3: 비용 구조 ── */
+  // 요약
+  const costSumHdr=new TableRow({children:[hdrCell('구분',40),hdrCell('금액(원)',35),hdrCell('비율(%)',25)],tableHeader:true});
+  const costSumRows=[
+    {l:'직접비(외주비)',v:r.os,  c:'534AB7'},
+    {l:'직접경비',      v:r.svc, c:'854F0B'},
+    {l:'운영경비',      v:r.opex,c:'E67E22'},
+  ].map((item,i)=>new TableRow({children:[
+    new TableCell({children:[new Paragraph({children:[ko(item.l,{size:20,color:item.c,bold:true})]})],shading:{type:ShadingType.SOLID,fill:i%2===0?'FFFFFF':'FAFAF8'},borders:cb,width:{size:40,type:WidthType.PERCENTAGE}}),
+    new TableCell({children:[new Paragraph({children:[en(fmt(item.v),{size:20,color:item.c})],alignment:AlignmentType.RIGHT})],shading:{type:ShadingType.SOLID,fill:i%2===0?'FFFFFF':'FAFAF8'},borders:cb,width:{size:35,type:WidthType.PERCENTAGE}}),
+    new TableCell({children:[new Paragraph({children:[en(pct(item.v,r.rv),{size:20,color:item.c})],alignment:AlignmentType.CENTER})],shading:{type:ShadingType.SOLID,fill:i%2===0?'FFFFFF':'FAFAF8'},borders:cb,width:{size:25,type:WidthType.PERCENTAGE}}),
+  ]}));
+  const costSumTotal=new TableRow({children:[
+    totalCell('TOTAL'),
+    totalCell(fmt(r.os+r.svc+r.opex),{en:true,align:AlignmentType.RIGHT}),
+    totalCell(pct(r.os+r.svc+r.opex,r.rv),{en:true,align:AlignmentType.CENTER}),
+  ]});
+  const costSumTable=new Table({rows:[costSumHdr,...costSumRows,costSumTotal],width:{size:100,type:WidthType.PERCENTAGE}});
+
+  // 세부 항목
+  const detHdr=new TableRow({children:['구분','카테고리','항목명','공급가액(원)','VAT'].map(h=>hdrCell(h)),tableHeader:true});
+  const detRows=S.outs.map((o,i)=>{
+    const v=parseFloat(o.amount)||0;
+    const sup=o.vatIncl?fl(v/1.1):v;
+    const cat=OCATS.find(c=>c.id===o.catId);
+    const grp=cat?.group==='direct'?'직접비(외주비)':cat?.group==='expense'?'직접경비':'운영경비';
+    const bg=i%2===0?'FFFFFF':'FAFAF8';
+    return new TableRow({children:[
+      new TableCell({children:[new Paragraph({children:[ko(grp,{size:18})]})],shading:{type:ShadingType.SOLID,fill:bg},borders:cb}),
+      new TableCell({children:[new Paragraph({children:[ko(cat?.label||o.catId,{size:18})]})],shading:{type:ShadingType.SOLID,fill:bg},borders:cb}),
+      new TableCell({children:[new Paragraph({children:[ko(o.name||'-',{size:18})]})],shading:{type:ShadingType.SOLID,fill:bg},borders:cb}),
+      new TableCell({children:[new Paragraph({children:[en(fmt(sup),{bold:true,size:18})],alignment:AlignmentType.RIGHT})],shading:{type:ShadingType.SOLID,fill:bg},borders:cb}),
+      new TableCell({children:[new Paragraph({children:[ko(o.vatIncl?'포함':'별도',{size:18})],alignment:AlignmentType.CENTER})],shading:{type:ShadingType.SOLID,fill:bg},borders:cb}),
+    ]});
+  });
+  const detTable=new Table({rows:[detHdr,...detRows],width:{size:100,type:WidthType.PERCENTAGE}});
 
   // 푸터
-  const footer=new Paragraph({
-    children:[
-      koRun("d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭",{size:16,color:"A3A29C",characterSpacing:-10}),
-    ],spacing:{before:300,after:0},
+  const footerPara=new Paragraph({
+    children:[ko("d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭 · d'strict B2G Simulator Vol.1.3.1",
+      {size:16,color:'A3A29C',characterSpacing:-10})],
+    spacing:{before:240},
   });
 
-  // 문서 조립
-  const doc=new Document({
-    sections:[{properties:{},children:[
-      titlePara,...infoRows,pnlTitle,pnlTable,laborTitle,laborTable,footer,
-    ]}],
-  });
+  // ── 문서 조립 ──
+  const doc=new Document({sections:[{properties:{},children:[
+    titlePara, projPara,
+    secTitle('손익 계산서'), pnlTable,
+    secTitle('M/M 구성비'), mmTable,
+    secTitle('비용 구조 요약'), costSumTable,
+    new Paragraph({spacing:{before:120,after:80}}),
+    secTitle('비용 세부 항목'), detTable,
+    footerPara,
+  ]}]});
 
-  // 저장 (YYMMDD_제목 - d'strict 규칙)
+  // ── 저장 ──
   const dt=new Date();
   const yy=String(dt.getFullYear()).slice(2);
   const mm2=String(dt.getMonth()+1).padStart(2,'0');
   const dd=String(dt.getDate()).padStart(2,'0');
   const fname=`${yy}${mm2}${dd}_${(S.projectName||'B2G_시뮬레이터').replace(/['/]/g,'')}.docx`;
-
   const blob=await Packer.toBlob(doc);
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=fname;
   document.body.appendChild(a);a.click();
   setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},200);
-  showToast("✅ Word 파일 다운로드 완료 (d'strict 서식 적용)");
+  showToast("✅ Word 파일 다운로드 완료 (4섹션 · d'strict 서식)");
 }
 
 /* ── Toast 메시지 헬퍼 ── */
