@@ -845,20 +845,25 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
           <div style="font-size:12px;color:var(--muted);line-height:1.7">상단 <strong>프로젝트 관리</strong> → <strong>현재 저장</strong> 버튼 클릭. 브라우저 localStorage에 저장되므로 같은 기기·같은 브라우저에서만 유지됩니다.</div>
         </div>
         <div style="padding:12px 14px;background:#E6F1FB;border-radius:8px;border:1px solid #b5d4f4">
-          <div style="font-size:13px;font-weight:600;color:#185FA5;margin-bottom:6px">🔗 다른 사람과 공유하는 방법</div>
+          <div style="font-size:13px;font-weight:600;color:#185FA5;margin-bottom:6px">🔗 공유 링크로 전달하는 방법 (추천)</div>
           <div style="font-size:12px;color:#2a5fa5;line-height:1.7">
             <strong>보내는 사람:</strong><br>
-            1. 변경 적용 완료 후 상단 <strong>📤 내보내기</strong> 클릭<br>
-            2. 파일 형식 중 <strong>프로젝트 파일 (.json)</strong> 선택하여 다운로드<br>
-            3. JSON 파일을 상대방에게 전달 (이메일, 메신저 등)<br><br>
+            1. 변경 적용 완료 후 상단 <strong>🔗 공유</strong> 버튼 클릭<br>
+            2. 열람 전용 / 편집 가능 모드 선택<br>
+            3. <strong>공유 링크 생성</strong> 버튼 클릭 → 링크 자동 복사<br>
+            4. 복사된 링크를 상대방에게 전달<br><br>
             <strong>받는 사람:</strong><br>
-            1. <strong>프로젝트 관리</strong> → <strong>📥 가져오기</strong> 버튼 클릭<br>
-            2. 전달받은 JSON 파일 선택<br>
-            3. 프로젝트 목록에서 해당 프로젝트 클릭 → <strong>불러오기</strong>
+            1. 링크 클릭 시 시뮬레이터가 열리며 <strong>데이터 자동 복원</strong><br>
+            2. 입력값·결과 화면이 그대로 표시됨
           </div>
         </div>
-        <div style="padding:12px 14px;background:#FFF8E6;border-radius:8px;border:1px solid #f0d9a0">
-          <div style="font-size:12px;color:#854F0B;line-height:1.7">⚠️ <strong>주의:</strong> 공유 링크(GitHub Pages URL)는 입력 데이터를 포함하지 않습니다. 데이터를 전달할 때는 반드시 <strong>JSON 파일 내보내기</strong>를 사용하세요.</div>
+        <div style="padding:12px 14px;background:var(--bg);border-radius:8px">
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">📁 파일로 전달하는 방법 (백업용)</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7">
+            1. 상단 <strong>📤 내보내기</strong> 클릭 → <strong>프로젝트 파일 (.json)</strong> 다운로드<br>
+            2. JSON 파일을 상대방에게 전달<br>
+            3. 받는 사람: <strong>프로젝트 관리</strong> → <strong>📥 가져오기</strong> → 파일 선택 → 불러오기
+          </div>
         </div>
       </div>
     </div>
@@ -900,8 +905,8 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
           <div style="font-size:12px;color:var(--muted)">기초금액이 0이거나 투찰율이 설정되지 않으면 결과가 표시되지 않습니다. 발주 정보의 기초금액을 확인하세요.</div>
         </div>
         <div style="padding:10px 14px;border-radius:8px;background:var(--bg)">
-          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px">Q. 링크를 공유했는데 상대방한테 내 데이터가 안 보여요.</div>
-          <div style="font-size:12px;color:var(--muted)">링크(URL)는 데이터를 포함하지 않습니다. 반드시 📤 내보내기 → JSON 파일을 전달하고, 상대방이 가져오기로 불러와야 합니다.</div>
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px">Q. 공유 링크를 전달했는데 상대방한테 데이터가 안 보여요.</div>
+          <div style="font-size:12px;color:var(--muted)">🔗 공유 버튼으로 생성한 링크는 데이터가 포함됩니다. 단, 일반 URL(https://shin3164.github.io/d-strict_dx/)은 데이터를 포함하지 않습니다. 반드시 <strong>공유 버튼 → 공유 링크 생성</strong>으로 만든 링크를 전달하세요.</div>
         </div>
         <div style="padding:10px 14px;border-radius:8px;background:var(--bg)">
           <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px">Q. 프로젝트를 불러왔는데 결과창이 비어 있어요.</div>
