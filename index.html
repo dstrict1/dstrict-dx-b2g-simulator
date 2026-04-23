@@ -586,6 +586,125 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
   #kpi-sticky .kpi-s-val{font-size:12px}
   #kpi-sticky .live-badge{display:none}
 }
+
+/* ── 글자 크기 조절 버튼 ── */
+.fs-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:5px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+  color:rgba(255,255,255,.75);cursor:pointer;font-family:var(--font);
+  font-weight:600;transition:all .15s;line-height:1;
+}
+.fs-btn:hover{background:rgba(255,255,255,.18);color:#fff;}
+.fs-btn.active{background:rgba(255,255,255,.25);color:#fff;border-color:rgba(255,255,255,.5);}
+#fs-wrap{display:flex;align-items:center;gap:2px;margin-left:8px;padding-left:8px;border-left:1px solid rgba(255,255,255,.15);}
+#fs-label{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:0.3px;margin-right:2px;font-family:var(--font);}
+
+/* ══════════════════════════════════════════
+   가독성 개선 — 폰트·간격·색상 최적화
+══════════════════════════════════════════ */
+
+/* 기본 body 줄간격 */
+body{ line-height:1.5; }
+
+/* 섹션 카드 */
+.sc{ margin-bottom:12px; }
+.sc-head{ padding:10px 16px; }
+.sc-title{
+  font-size:12px !important;
+  font-weight:700;
+  color:var(--text) !important;
+  text-transform:none !important;     /* uppercase 제거 */
+  letter-spacing:0.1px !important;
+}
+.sc-body{ padding:14px 16px; }
+
+/* 입력 레이블 */
+.lbl{
+  font-size:13px !important;
+  font-weight:600;
+  color:var(--muted);
+  margin-bottom:6px;
+  letter-spacing:0.1px !important;
+}
+
+/* 입력창 */
+.inp{
+  font-size:14px !important;
+  padding:9px 12px !important;
+}
+
+/* hint 텍스트 */
+.hint-txt{ font-size:12px !important; margin-top:5px; }
+
+/* 손익계산서 행 */
+.pnl-row{
+  padding:6px 2px !important;         /* 4→6px 행간 확대 */
+  font-size:13px !important;           /* 12→13px */
+  border-bottom:1px solid var(--border);
+}
+.pnl-row:last-child{ border-bottom:none; }
+.pnl-indent{ padding-left:18px !important; }
+.pnl-row.sep{ margin-top:4px; border-top:2px solid var(--border); }
+
+/* KPI 카드 */
+.kpi{ padding:13px 15px !important; }
+.kpi-label{
+  font-size:12px !important;           /* 11→12px */
+  margin-bottom:5px !important;
+  color:var(--muted);
+  font-weight:500;
+}
+.kpi-value{
+  font-size:20px !important;           /* 18→20px */
+  letter-spacing:-0.6px !important;
+}
+.kpi-sub{
+  font-size:12px !important;           /* 11→12px */
+  margin-top:4px;
+}
+
+/* 탭 버튼 */
+.tab{
+  font-size:12px !important;           /* 11→12px */
+  padding:6px 14px !important;
+}
+
+/* 노임단가 카드 */
+.grade-card-val{ font-size:14px !important; }
+.grade-card-sub{ font-size:11px !important; }
+
+/* 아코디언 헤더 */
+.sc-head .sc-title{ font-size:13px !important; }
+
+/* 외주비 항목 행 */
+.outs-row{ padding:10px 0 !important; }
+
+/* 슬라이더 값 표시 */
+.dual-val{ font-size:14px !important; }
+.dual-lbl{ font-size:12px !important; }
+
+/* 선택창 */
+.grade-sel{ font-size:13px !important; }
+
+/* 모달 */
+.modal-title{ font-size:16px !important; }
+.modal-box{ padding:22px !important; }
+
+/* 프로젝트 카드 */
+.pp-proj-name{ font-size:14px !important; }
+
+/* 테이블 헤더/데이터 */
+.sc-body table th{ font-size:12px !important; }
+.sc-body table td{ font-size:13px !important; }
+
+/* 결과 섹션 제목 */
+.chart-title{ font-size:13px !important; font-weight:700; }
+
+/* 전반적 여백 개선 */
+#left{ padding:16px !important; }
+#right{ padding:18px 20px !important; }
+
 </style>
 </head>
 <body>
@@ -649,6 +768,13 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         사용 가이드
       </button>
+    </div>
+    <!-- 글자 크기 조절 -->
+    <div id="fs-wrap">
+      <span id="fs-label">글자</span>
+      <button class="fs-btn" id="fs-small"  onclick="setFontScale(0)" title="작게 (88%)">A-</button>
+      <button class="fs-btn" id="fs-medium" onclick="setFontScale(1)" title="기본 (100%)">A</button>
+      <button class="fs-btn" id="fs-large"  onclick="setFontScale(2)" title="크게 (114%)">A+</button>
     </div>
     <div class="tb-sep"></div>
   </div>
@@ -3425,6 +3551,30 @@ function showToast(msg){
   t._timer=setTimeout(()=>{t.style.opacity='0';},3000);
 }
 
+
+/* ── 글자 크기 조절 ── */
+const FS_SCALES=[0.88, 1.0, 1.14]; // 작게 / 기본 / 크게
+const FS_IDS=['fs-small','fs-medium','fs-large'];
+const FS_LABELS=['88%','100%','114%'];
+
+function setFontScale(idx){
+  const scale=FS_SCALES[idx];
+  document.documentElement.style.zoom=scale;
+  localStorage.setItem('b2g_fs',idx);
+  FS_IDS.forEach((id,i)=>{
+    const btn=document.getElementById(id);
+    if(btn)btn.classList.toggle('active',i===idx);
+  });
+}
+
+function initFontScale(){
+  const saved=parseInt(localStorage.getItem('b2g_fs')||'1',10);
+  const idx=isNaN(saved)||saved<0||saved>2?1:saved;
+  setFontScale(idx);
+}
+
+// 앱 시작 시 적용
+initFontScale();
 function download(content,filename,mime){
   const blob=new Blob([content],{type:mime});const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=filename;
