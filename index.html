@@ -3655,7 +3655,7 @@ async function createShareLink(){
         'Content-Type':'application/json',
         'X-Master-Key':JSONBIN_KEY,'X-Access-Key':apiKey===JSONBIN_KEY?JSONBIN_ACCESS_KEY:apiKey,
         'X-Bin-Private':'false',
-        'X-Bin-Name':'B2G_'+(S.projectName||'share')+'_'+new Date().toISOString().slice(0,10)
+        'X-Bin-Name':'B2G_'+new Date().toISOString().slice(0,10)
       },
       body:JSON.stringify(payload)
     });
