@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>d'strict B2G Simulator Vol.1.3.2</title>
-<meta property="og:title" content="d'strict B2G Simulator Vol.1.3.2">
+<title>d'strict B2G Simulator Vol.1.3.3</title>
+<meta property="og:title" content="d'strict B2G Simulator Vol.1.3.3">
 <meta property="og:url" content="https://shin3164.github.io/dstrict-dx-b2g-simulator/">
 <meta property="og:description" content="d'strict B2G 전략 예산 시뮬레이터 — 공공사업 투찰율·손익 분석 도구">
 <style>
@@ -546,7 +546,7 @@ body.readonly .icon-btn{pointer-events:none;opacity:.4}
 /* ── 외주비 항목 행 정렬 ── */
 .outs-row-inner{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 
-/* ── UX 개선 Vol.1.3.2 ── */
+/* ── UX 개선 Vol.1.3.3 ── */
 
 /* 좌측 스크롤 시 결과 고정 */
 #left{scroll-behavior:smooth}
@@ -633,7 +633,7 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
       <div class="tb-logo-mark">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
       </div>
-      <span class="tb-name">d'strict B2G Simulator <span style='font-size:10px;font-weight:400;opacity:.7'>Vol.1.3.2</span></span>
+      <span class="tb-name">d'strict B2G Simulator <span style='font-size:10px;font-weight:400;opacity:.7'>Vol.1.3.3</span></span>
     </div>
     <!-- 네비게이션 메뉴 -->
     <div id="tb-nav" style="display:flex;align-items:center;gap:2px;margin-left:12px">
@@ -644,6 +644,10 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
       <button class="tb-nav-btn" data-page="projects" onclick="switchPage('projects')">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         프로젝트 관리
+      </button>
+      <button class="tb-nav-btn" data-page="guide" onclick="switchPage('guide')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        사용 가이드
       </button>
     </div>
     <div class="tb-sep"></div>
@@ -691,7 +695,7 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
         <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;background:var(--purple);margin-bottom:14px">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
         </div>
-        <h1 style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:6px">d'strict B2G Simulator Vol.1.3.2</h1>
+        <h1 style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:6px">d'strict B2G Simulator Vol.1.3.3</h1>
         <p style="font-size:13px;color:var(--muted);letter-spacing:0.2px">2026 KOSA 노임단가 기준 · SW사업 대가산정 가이드(2025 개정판)</p>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="home-menu-grid">
@@ -765,6 +769,151 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
     <div id="right"></div>
   </div>
 
+
+  <!-- ── Guide Page ── -->
+  <div id="page-guide" style="display:none;padding:24px 32px;max-width:900px;margin:0 auto;box-sizing:border-box;overflow-y:auto;height:calc(100vh - 52px)">
+    <div style="margin-bottom:28px">
+      <h1 style="font-size:22px;font-weight:700;color:var(--text);margin:0 0 6px;letter-spacing:-0.5px">d&#39;strict B2G Simulator 사용 가이드</h1>
+      <p style="font-size:13px;color:var(--muted);margin:0">B2G(Business to Government) 공공사업 입찰 수익성 시뮬레이션 도구입니다.</p>
+    </div>
+
+    <!-- 섹션 1: 입력 순서 -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <span style="width:28px;height:28px;background:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0">1</span>
+        <h2 style="font-size:16px;font-weight:700;color:var(--text);margin:0;letter-spacing:-0.3px">입력 순서</h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 14px;background:var(--bg);border-radius:8px">
+          <span style="width:22px;height:22px;background:#185FA5;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px">1</span>
+          <div><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px">발주 정보 입력</div><div style="font-size:12px;color:var(--muted)">기초금액(VAT포함 여부 확인), 투찰율, 최소입찰율을 설정합니다. 기초금액은 발주처 공시 예정가격을 입력하세요.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 14px;background:var(--bg);border-radius:8px">
+          <span style="width:22px;height:22px;background:#185FA5;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px">2</span>
+          <div><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px">노임단가 확인</div><div style="font-size:12px;color:var(--muted)">2026년 d&#39;strict 내부 노임단가 기준이 자동 적용됩니다. 제경비율·기술료율은 조정 가능합니다.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 14px;background:var(--bg);border-radius:8px">
+          <span style="width:22px;height:22px;background:#185FA5;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px">3</span>
+          <div><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px">투입 인력 입력</div><div style="font-size:12px;color:var(--muted)">+ 추가 버튼으로 투입 인력을 추가합니다. 직무·등급·인원·M/M(투입 개월 수)를 입력하면 인건비가 자동 계산됩니다.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 14px;background:var(--bg);border-radius:8px">
+          <span style="width:22px;height:22px;background:#534AB7;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px">4</span>
+          <div><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px">직접비(외주비) / 직접경비 / 운영경비 입력</div><div style="font-size:12px;color:var(--muted)">+ 추가로 항목을 추가하고, 드롭다운에서 카테고리를 선택합니다.<br>• 직접비(외주비): 콘텐츠·하드웨어·인테리어 등 외주 턴키 견적<br>• 직접경비: 과업지시서 필수 실비용 (보고회 운영, 유동인구 분석 등)<br>• 운영경비: 여비교통비, 식대/간식/회식, 접대비, 기타직접비</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 14px;background:#EAF3DE;border-radius:8px;border:1px solid #c0dd97">
+          <span style="width:22px;height:22px;background:#3B6D11;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px">5</span>
+          <div><div style="font-size:13px;font-weight:600;color:#3B6D11;margin-bottom:3px">변경 적용 버튼 클릭</div><div style="font-size:12px;color:#5a8a2a">모든 입력 완료 후 하단의 <strong>변경 적용</strong> 버튼을 클릭해야 결과창에 반영됩니다. 이 단계를 반드시 거쳐야 저장 및 공유가 가능합니다.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 2: 핵심 지표 -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <span style="width:28px;height:28px;background:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0">2</span>
+        <h2 style="font-size:16px;font-weight:700;color:var(--text);margin:0;letter-spacing:-0.3px">핵심 지표 설명</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="padding:12px 14px;background:var(--bg);border-radius:8px;border-left:3px solid #534AB7">
+          <div style="font-size:12px;font-weight:700;color:#534AB7;margin-bottom:4px">공헌이익</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.6">매출액 − 직접비 − 직접경비 − 운영경비<br>d&#39;strict의 핵심 수익성 지표. 내부 인건비를 제외한 순수 외부 비용 차감 후 이익.</div>
+        </div>
+        <div style="padding:12px 14px;background:var(--bg);border-radius:8px;border-left:3px solid #185FA5">
+          <div style="font-size:12px;font-weight:700;color:#185FA5;margin-bottom:4px">매출총이익</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.6">공헌이익 − 내부인건비<br>내부 인건비까지 포함한 최종 수익성 지표.</div>
+        </div>
+        <div style="padding:12px 14px;background:var(--bg);border-radius:8px;border-left:3px solid #E67E22">
+          <div style="font-size:12px;font-weight:700;color:#E67E22;margin-bottom:4px">투찰금액 vs 매출액</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.6">투찰금액(VAT포함) = 기초금액 × 투찰율<br>매출액(VAT별도) = 투찰금액 ÷ 1.1</div>
+        </div>
+        <div style="padding:12px 14px;background:var(--bg);border-radius:8px;border-left:3px solid #3B6D11">
+          <div style="font-size:12px;font-weight:700;color:#3B6D11;margin-bottom:4px">목표 공헌이익률</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.6">20% 이상 ✅ 목표 달성<br>0~20% ⚠️ 주의 구간<br>0% 미만 ❌ 적자</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 3: 저장 / 불러오기 -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <span style="width:28px;height:28px;background:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0">3</span>
+        <h2 style="font-size:16px;font-weight:700;color:var(--text);margin:0;letter-spacing:-0.3px">저장 및 불러오기</h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="padding:12px 14px;background:var(--bg);border-radius:8px">
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">📁 현재 기기에 저장</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7">상단 <strong>프로젝트 관리</strong> → <strong>현재 저장</strong> 버튼 클릭. 브라우저 localStorage에 저장되므로 같은 기기·같은 브라우저에서만 유지됩니다.</div>
+        </div>
+        <div style="padding:12px 14px;background:#E6F1FB;border-radius:8px;border:1px solid #b5d4f4">
+          <div style="font-size:13px;font-weight:600;color:#185FA5;margin-bottom:6px">🔗 다른 사람과 공유하는 방법</div>
+          <div style="font-size:12px;color:#2a5fa5;line-height:1.7">
+            <strong>보내는 사람:</strong><br>
+            1. 변경 적용 완료 후 상단 <strong>📤 내보내기</strong> 클릭<br>
+            2. 파일 형식 중 <strong>프로젝트 파일 (.json)</strong> 선택하여 다운로드<br>
+            3. JSON 파일을 상대방에게 전달 (이메일, 메신저 등)<br><br>
+            <strong>받는 사람:</strong><br>
+            1. <strong>프로젝트 관리</strong> → <strong>📥 가져오기</strong> 버튼 클릭<br>
+            2. 전달받은 JSON 파일 선택<br>
+            3. 프로젝트 목록에서 해당 프로젝트 클릭 → <strong>불러오기</strong>
+          </div>
+        </div>
+        <div style="padding:12px 14px;background:#FFF8E6;border-radius:8px;border:1px solid #f0d9a0">
+          <div style="font-size:12px;color:#854F0B;line-height:1.7">⚠️ <strong>주의:</strong> 공유 링크(GitHub Pages URL)는 입력 데이터를 포함하지 않습니다. 데이터를 전달할 때는 반드시 <strong>JSON 파일 내보내기</strong>를 사용하세요.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 4: 데이터 추출 -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <span style="width:28px;height:28px;background:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0">4</span>
+        <h2 style="font-size:16px;font-weight:700;color:var(--text);margin:0;letter-spacing:-0.3px">데이터 추출</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div style="padding:12px 14px;background:var(--bg);border-radius:8px">
+          <div style="font-size:22px;margin-bottom:6px">📊</div>
+          <div style="font-size:12px;font-weight:700;color:#217346;margin-bottom:4px">Excel (.xlsx)</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.6">손익계산서·M/M구성비·비용구조 3시트. d&#39;strict 서식 자동 적용.</div>
+        </div>
+        <div style="padding:12px 14px;background:var(--bg);border-radius:8px">
+          <div style="font-size:22px;margin-bottom:6px">📑</div>
+          <div style="font-size:12px;font-weight:700;color:#C9511C;margin-bottom:4px">PowerPoint (.pptx)</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.6">타이틀·손익·M/M·비용구조 4슬라이드. d&#39;strict 폰트·CI 서식 적용.</div>
+        </div>
+        <div style="padding:12px 14px;background:var(--bg);border-radius:8px">
+          <div style="font-size:22px;margin-bottom:6px">📝</div>
+          <div style="font-size:12px;font-weight:700;color:#185FA5;margin-bottom:4px">Word (.docx)</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.6">보고서 형식 4섹션. 맑은고딕 자간·d&#39;strict 표준 서식 적용.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 5: FAQ -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:32px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <span style="width:28px;height:28px;background:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0">5</span>
+        <h2 style="font-size:16px;font-weight:700;color:var(--text);margin:0;letter-spacing:-0.3px">자주 묻는 질문</h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="padding:10px 14px;border-radius:8px;background:var(--bg)">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px">Q. 변경 적용을 눌렀는데 결과가 안 보여요.</div>
+          <div style="font-size:12px;color:var(--muted)">기초금액이 0이거나 투찰율이 설정되지 않으면 결과가 표시되지 않습니다. 발주 정보의 기초금액을 확인하세요.</div>
+        </div>
+        <div style="padding:10px 14px;border-radius:8px;background:var(--bg)">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px">Q. 링크를 공유했는데 상대방한테 내 데이터가 안 보여요.</div>
+          <div style="font-size:12px;color:var(--muted)">링크(URL)는 데이터를 포함하지 않습니다. 반드시 📤 내보내기 → JSON 파일을 전달하고, 상대방이 가져오기로 불러와야 합니다.</div>
+        </div>
+        <div style="padding:10px 14px;border-radius:8px;background:var(--bg)">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px">Q. 프로젝트를 불러왔는데 결과창이 비어 있어요.</div>
+          <div style="font-size:12px;color:var(--muted)">프로젝트 불러오기 후 결과창이 자동으로 표시됩니다. 만약 비어 있다면 변경 적용 버튼을 한 번 클릭하세요.</div>
+        </div>
+        <div style="padding:10px 14px;border-radius:8px;background:var(--bg)">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px">Q. 시나리오 비교는 어떻게 하나요?</div>
+          <div style="font-size:12px;color:var(--muted)">여러 투찰율 시나리오를 각각 저장한 후, 프로젝트 관리 → 비교 분석 탭에서 최대 6개 프로젝트를 선택해 비교할 수 있습니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- ── Export Modal ── -->
   <div id="modal-export" class="modal-overlay" style="display:none">
     <div class="modal-box">
@@ -833,10 +982,18 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
 
         <!-- STEP 1: API 키 입력 -->
         <div id="share-step1">
-          <p style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.7;letter-spacing:0.2px">
-            현재 입력된 설정을 클라우드에 저장하고 공유 링크를 생성합니다.<br>
-            받는 사람은 링크만 클릭하면 바로 열람할 수 있습니다.
+          <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7;letter-spacing:0.2px">
+            입력된 설정을 클라우드에 저장하고 공유 링크를 생성합니다.<br>
+            받는 사람은 링크 클릭 한 번으로 결과를 바로 확인할 수 있습니다.
           </p>
+          <!-- 최초 사용 안내 -->
+          <div id="share-setup-guide" style="margin-bottom:14px;padding:11px 13px;background:#FFF8E6;border:1px solid #f0d9a0;border-radius:8px;font-size:11px;color:#854F0B;line-height:1.8">
+            <strong>⚙️ 최초 1회 설정 필요</strong><br>
+            <a href="https://jsonbin.io/app/app/api-keys" target="_blank" style="color:#185FA5;font-weight:600">jsonbin.io/app/app/api-keys</a> 접속 →
+            <strong>B2G TEST</strong> 키 클릭 →
+            <strong>Allowed Hosts</strong>에 <code style="background:#fff;padding:1px 4px;border-radius:3px;font-size:10px">shin3164.github.io</code> 추가 후 저장<br>
+            <span style="color:#a3a29c">이미 설정했다면 바로 링크 생성을 눌러주세요.</span>
+          </div>
           <!-- 권한 -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
             <div class="share-opt on" id="sopt-ro" onclick="selectShareOpt('ro')">
@@ -855,9 +1012,22 @@ button:has(.vat-btn) + button:hover{opacity:.9;transform:scale(.98)}
             <span id="btn-create-txt">공유 링크 생성</span>
           </button>
           <div id="share-err" style="display:none;margin-top:10px;padding:9px 12px;background:var(--red-bg);border-radius:7px;font-size:11px;color:var(--red);letter-spacing:0.2px;line-height:1.6"></div>
-          <!-- 숨겨진 API 키 입력 (고급 사용자 전용) -->
-          <input id="inp-apikey" type="hidden" value="">
-          <input type="hidden" id="chk-save-key">
+          <!-- API Key 입력 (오류 시 자동 표시) -->
+          <div id="apikey-wrap" style="display:none;margin-top:14px;padding:14px;background:var(--blue-bg);border-radius:10px;border:1px solid #b5d4f4">
+            <div style="font-size:12px;font-weight:700;color:#185FA5;margin-bottom:8px">🔑 JSONBin API Key 직접 입력</div>
+            <div style="font-size:11px;color:#2a5fa5;margin-bottom:10px;line-height:1.7">
+              <strong>발급 방법:</strong><br>
+              1. <a href="https://jsonbin.io/login" target="_blank" style="color:#185FA5">jsonbin.io/login</a> 접속 → GitHub/Google 로그인<br>
+              2. 우측 상단 프로필 → <strong>API Keys</strong><br>
+              3. <strong>+ Create Access Key</strong> 클릭<br>
+              4. Allowed Hosts에 <code style="background:#fff;padding:1px 4px;border-radius:3px">${location.hostname}</code> 입력<br>
+              5. 생성된 <strong>Secret Key</strong> 복사 후 아래 입력
+            </div>
+            <input id="inp-apikey" type="password" placeholder="$2a$10$..." class="inp" style="font-size:11px;font-family:monospace;width:100%;box-sizing:border-box;margin-bottom:6px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);cursor:pointer">
+              <input type="checkbox" id="chk-save-key"> 이 기기에 저장
+            </label>
+          </div>
         </div>
 
         <!-- STEP 2: 완료 -->
@@ -1083,10 +1253,34 @@ function enterApp(){
   normalizeOutsData();
   const nameEl=document.getElementById('tb-user-name');
   if(nameEl) nameEl.textContent=CURRENT_USER?CURRENT_USER.name+'님 ('+CURRENT_USER.role+')':'열람 중';
-  buildLeft();buildRight();bindActionBar();
-  autoSetScenarios();  // 초기 진입 시 Best/Worst 자동 계산
-  BASELINE=null;  // 확정 전까지 대기 화면 유지
-  document.getElementById('confirm-time').textContent='';
+  buildLeft();bindActionBar();
+  autoSetScenarios();
+
+  // 공유 링크로 접속한 경우 → 결과 자동 복원
+  if(window._SHARE_RESULT){
+    BASELINE=window._SHARE_RESULT;
+    IS_DIRTY=false;
+    renderRightFull();
+    updateKPIs();
+    updateStickyKPI();
+    removePendingOverlay();
+    // 읽기 전용 모드
+    if(window._SHARE_READONLY){
+      IS_READONLY=true;
+      document.body.classList.add('readonly');
+      const cb=document.getElementById('confirm-bar');
+      if(cb)cb.style.display='none';
+    }
+    const timeEl=document.getElementById('confirm-time');
+    if(timeEl)timeEl.textContent='공유 링크로 불러옴';
+    showToast('✅ 공유 데이터를 불러왔습니다.');
+    delete window._SHARE_RESULT;
+    delete window._SHARE_READONLY;
+  } else {
+    buildRight();
+    BASELINE=null;
+    document.getElementById('confirm-time').textContent='';
+  }
 }
 
 function enterReadOnly(data){
@@ -2375,7 +2569,7 @@ function buildExcel(){
   const N=v=>typeof v==='number'?v.toLocaleString('ko-KR'):'';
   const P=v=>typeof v==='number'?v.toFixed(2)+'%':'';
   const rows=[];
-  rows.push(["d'strict B2G Simulator Vol.1.3.2","","생성:",new Date().toLocaleString('ko-KR')]);
+  rows.push(["d'strict B2G Simulator Vol.1.3.3","","생성:",new Date().toLocaleString('ko-KR')]);
   rows.push(["프로젝트명",S.projectName||"(미입력)"]);
   rows.push([]);
   rows.push(["[투찰 정보]"]);
@@ -2417,7 +2611,7 @@ function buildWordReport(){
   const sep='='.repeat(50);
   const lines=[
     sep,
-    "  d'strict B2G Simulator Vol.1.3.2",
+    "  d'strict B2G Simulator Vol.1.3.3",
     "  공공사업 예산 분석 보고서",
     sep,
     "프로젝트명: "+(S.projectName||"(미입력)"),
@@ -2457,7 +2651,7 @@ function buildWordReport(){
     "",
     sep,
     "d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭",
-    "d'strict B2G Simulator Vol.1.3.2",
+    "d'strict B2G Simulator Vol.1.3.3",
     sep,
   ];
   return '﻿'+lines.join('\r\n');
@@ -2466,7 +2660,7 @@ function buildWordReport(){
 function buildPPTNotes(){
   const r=compute(S.bid),mms=getMMs();
   const lines=[
-    "━━━ PPT 발표 노트 — d'strict B2G Simulator Vol.1.3.2 ━━━",
+    "━━━ PPT 발표 노트 — d'strict B2G Simulator Vol.1.3.3 ━━━",
     "",
     "【슬라이드 1: 프로젝트 개요】",
     "- 프로젝트명: "+(S.projectName||"(미입력)"),
@@ -2495,7 +2689,7 @@ function buildPPTNotes(){
     "- 현재 투찰율 "+S.bid.toFixed(2)+"%: 영업이익 "+fmtW(r.op)+" / 이익률 "+r.mg.toFixed(2)+"%",
     "",
     ...(S.memo?["【슬라이드 6: 특이사항】",S.memo,""]:[]),
-    "━━━ d'strict 2026년 노임단가 기준 · d'strict B2G Simulator Vol.1.3.2 ━━━",
+    "━━━ d'strict 2026년 노임단가 기준 · d'strict B2G Simulator Vol.1.3.3 ━━━",
   ];
   return '﻿'+lines.join('\r\n');
 }
@@ -2597,7 +2791,7 @@ async function exportDstrictXLSX(){
 
   // ─ 1행: 타이틀 ─
   const rows=[];
-  rows.push(["d'strict B2G Simulator Vol.1.3.2  ─  "+( S.projectName||'프로젝트명 미입력'),'','','','생성일:',today,'']);
+  rows.push(["d'strict B2G Simulator Vol.1.3.3  ─  "+( S.projectName||'프로젝트명 미입력'),'','','','생성일:',today,'']);
   M(0,0,0,6); // 타이틀 전체 병합은 xlsx CE에서 불가 → 컬럼별로 처리
 
   // ─ 2행: 공백 ─
@@ -2704,7 +2898,7 @@ async function exportDstrictXLSX(){
 
   // ─ 푸터 ─
   rows.push(['','','','','','','']);
-  rows.push(["d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭 · d'strict B2G Simulator Vol.1.3.2",'','','','','','']);
+  rows.push(["d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭 · d'strict B2G Simulator Vol.1.3.3",'','','','','','']);
 
   // 시트에 데이터 쓰기
   XLSX.utils.sheet_add_aoa(ws1, rows, {origin:'A1'});
@@ -3067,7 +3261,7 @@ async function exportDstrictDOCX(){
   // ── 타이틀 ──
   const titlePara=new Paragraph({
     children:[
-      ko("d'strict B2G Simulator Vol.1.3.2",{bold:true,size:30,color:'FFFFFF',characterSpacing:-14}),
+      ko("d'strict B2G Simulator Vol.1.3.3",{bold:true,size:30,color:'FFFFFF',characterSpacing:-14}),
       en('  '+today,{size:20,color:'AAAAAA'}),
     ],
     shading:{type:ShadingType.SOLID,fill:'000000'},
@@ -3183,7 +3377,7 @@ async function exportDstrictDOCX(){
 
   // 푸터
   const footerPara=new Paragraph({
-    children:[ko("d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭 · d'strict B2G Simulator Vol.1.3.2",
+    children:[ko("d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭 · d'strict B2G Simulator Vol.1.3.3",
       {size:16,color:'A3A29C',characterSpacing:-10})],
     spacing:{before:240},
   });
@@ -3240,7 +3434,8 @@ function datestamp(){return new Date().toISOString().slice(0,10).replace(/-/g,''
          링크 열면 → GET /v3/b/{id} → 설정 복원
 ============================================================ */
 const JSONBIN_API='https://api.jsonbin.io/v3/b';
-const JSONBIN_KEY='$2a$10$4XcMKfQ40LuPX3SK.aoPUeOICqxaghtPfaKXa0jucfWr.iJk4FTia';
+const JSONBIN_KEY='$2a$10$VDBpjsa0zHbShZVRfoj9FOcW.khPIRLos1pR.ILHs7XiIcPuesKnG';
+const JSONBIN_ACCESS_KEY='$2a$10$CnKLbeH3j7cyChR04pzeyu/QowzlXM7jNCrirGEOTrCtuspYRF5by';
 let SHARE_OPT='ro';
 
 function selectShareOpt(opt){
@@ -3266,10 +3461,15 @@ function resetShareModal(){
 }
 
 async function createShareLink(){
+  if(!BASELINE){
+    if(!confirm('변경 적용이 되지 않은 상태입니다.\n현재 입력값으로 공유 링크를 만드시겠습니까?'))return;
+    autoSetScenarios();
+    BASELINE=snapshotResult();
+  }
+
   const inputKey=(document.getElementById('inp-apikey')?.value||'').trim();
   const apiKey=inputKey||JSONBIN_KEY;
 
-  // 저장 옵션 (커스텀 키 입력 시)
   if(inputKey&&document.getElementById('chk-save-key')?.checked){
     lsSet('b2g4_apikey', inputKey);
   }
@@ -3281,11 +3481,16 @@ async function createShareLink(){
   document.getElementById('share-err').style.display='none';
 
   const payload={
-    base:S.base,bid:S.bid,oh:S.oh,tr:S.tr,wd:S.wd,
-    gd:S.gd,labor:S.labor,outs:S.outs,
-    svc:S.svc,indr:S.indr,sc:S.sc,
+    _app:'B2G Simulator Vol.1.3.3',
+    _ts:new Date().toISOString(),
     _ro:SHARE_OPT==='ro',
-    _ts:new Date().toISOString()
+    base:S.base,bid:S.bid,oh:S.oh,tr:S.tr,wd:S.wd,
+    gd:S.gd,labor:S.labor,outs:S.outs,opex:S.opex||[],
+    svc:S.svc,indr:S.indr,sc:S.sc,
+    memo:S.memo,outsMemo:S.outsMemo,
+    minBid:S.minBid,projectName:S.projectName,
+    baseVatIncl:S.baseVatIncl,
+    _result:BASELINE
   };
 
   try{
@@ -3293,44 +3498,65 @@ async function createShareLink(){
       method:'POST',
       headers:{
         'Content-Type':'application/json',
-        'X-Master-Key':apiKey,
+        'X-Master-Key':JSONBIN_KEY,'X-Access-Key':apiKey===JSONBIN_KEY?JSONBIN_ACCESS_KEY:apiKey,
         'X-Bin-Private':'false',
-        'X-Bin-Name':'B2G_'+new Date().toISOString().slice(0,10)
+        'X-Bin-Name':'B2G_'+(S.projectName||'share')+'_'+new Date().toISOString().slice(0,10)
       },
       body:JSON.stringify(payload)
     });
 
     if(!res.ok){
       const errData=await res.json().catch(()=>({}));
-      const msg=errData.message||('HTTP '+res.status);
-      if(res.status===401)showShareErr('API 키가 올바르지 않습니다. jsonbin.io에서 Secret Key를 다시 확인하세요.');
-      else showShareErr('저장 실패: '+msg);
-      if(btn)btn.disabled=false;
+      const errMsg=errData.message||('HTTP '+res.status);
+
+      if(res.status===403&&errMsg.includes('allowlist')){
+        showShareErr(
+          `❌ 호스트 인증 오류\n\n` +
+          `jsonbin.io 대시보드에서 설정이 필요합니다:\n` +
+          `1. jsonbin.io/app/app/api-keys 접속\n` +
+          `2. B2G TEST 키 클릭 후 펼치기\n` +
+          `3. Allowed Hosts 항목에 추가:\n` +
+          `   ${location.hostname}\n` +
+          `4. Save 클릭 후 다시 시도`
+        );
+        // API Key 입력란 노출
+        const keyWrap=document.getElementById('apikey-wrap');
+        if(keyWrap)keyWrap.style.display='block';
+      } else if(res.status===401){
+        showShareErr('❌ API Key가 올바르지 않습니다.\n아래 입력창에 jsonbin.io의 Master Key를 입력하세요.');
+        const keyWrap=document.getElementById('apikey-wrap');
+        if(keyWrap)keyWrap.style.display='block';
+      } else {
+        showShareErr('저장 실패: '+errMsg);
+      }
+      if(btn){btn.disabled=false;}
       if(txt)txt.textContent='공유 링크 생성';
       return;
     }
 
     const data=await res.json();
     const binId=data.metadata?.id||data.record?.id||data?.id;
-    if(!binId){showShareErr('Bin ID를 가져오지 못했습니다. 다시 시도해주세요.');if(btn)btn.disabled=false;if(txt)txt.textContent='공유 링크 생성';return;}
+    if(!binId){
+      showShareErr('Bin ID를 가져오지 못했습니다. 다시 시도해주세요.');
+      if(btn)btn.disabled=false;
+      if(txt)txt.textContent='공유 링크 생성';
+      return;
+    }
 
-    // 공유 링크 = 현재 파일 URL + ?bin=ID
+    // 공유 링크 생성
     const baseURL=location.href.split('?')[0].split('#')[0];
     const shareURL=baseURL+'?bin='+binId;
 
-    // Step 2 표시
     document.getElementById('share-step1').style.display='none';
     document.getElementById('share-step2').style.display='block';
     const resInp=document.getElementById('share-result-url');
     if(resInp)resInp.value=shareURL;
     const modeNote=document.getElementById('share-mode-note');
     if(modeNote)modeNote.textContent=SHARE_OPT==='ro'?'👁 열람 전용 모드':'✏️ 편집 가능 모드';
-
-    // 클립보드 자동 복사 시도
     navigator.clipboard.writeText(shareURL).catch(()=>{});
 
   }catch(e){
-    showShareErr('네트워크 오류: '+e.message);
+    showShareErr('네트워크 오류: '+e.message+'\n인터넷 연결을 확인하세요.');
     if(btn)btn.disabled=false;
     if(txt)txt.textContent='공유 링크 생성';
   }
@@ -3510,16 +3736,35 @@ function renderTrashList(){
 
 function loadProject(id){
   const proj=getProjects().find(p=>p.id===id);if(!proj)return;
-  if(!confirm(`"${proj.name}" 프로젝트를 불러오시겠습니까?
-현재 입력값이 변경됩니다.`))return;
+  if(!confirm(`"${proj.name}" 프로젝트를 불러오시겠습니까?\n현재 입력값이 변경됩니다.`))return;
   Object.assign(S,JSON.parse(JSON.stringify(proj.state)));
-  normalizeOutsData();  // 불러온 프로젝트도 id 재발급
-  buildLeft();buildRight();
+  normalizeOutsData();
+  // ① BASELINE 먼저 설정 — 결과창 표시 조건
+  BASELINE=proj.result||snapshotResult();
+  IS_DIRTY=false;
   autoSetScenarios();
-  BASELINE=proj.result;
+  buildLeft();
+  // ② 결과창 완전 렌더링 보장
+  renderRightFull();
+  updateKPIs();
+  updateStickyKPI();
+  removePendingOverlay();
+  // ③ confirm-bar 완료 상태
+  const btn=document.getElementById('btn-confirm');
+  const txt=document.getElementById('btn-confirm-txt');
+  if(btn){btn.className='confirmed';if(txt)txt.textContent='적용 완료';}
+  const cbBtn=document.getElementById('btn-confirm-bar');
+  const cbTxt=document.getElementById('btn-confirm-bar-txt');
+  if(cbBtn){cbBtn.style.background='var(--kpi-green)';if(cbTxt)cbTxt.textContent='적용 완료';}
+  setTimeout(()=>{
+    if(btn){btn.className='idle';if(txt)txt.textContent='변경 적용';}
+    if(cbBtn){cbBtn.style.background='';if(cbTxt)cbTxt.textContent='변경 적용';}
+  },2500);
   closeModal('modal-projects');
+  switchPage('simulator');
   const t=document.getElementById('confirm-time');
   if(t)t.textContent=proj.ts+' 불러옴';
+  showToast(`✅ "${proj.name}" 불러오기 완료`);
 }
 
 function switchProjTab(tab){
@@ -3662,6 +3907,7 @@ function switchPage(page){
     home: document.getElementById('page-home'),
     projects: document.getElementById('page-projects'),
     simulator: document.getElementById('main'),
+    guide: document.getElementById('page-guide'),
   };
   Object.keys(pages).forEach(k=>{
     if(pages[k]) pages[k].style.display = k===page ? (k==='main'||k==='simulator'?'flex':'block') : 'none';
@@ -3943,7 +4189,7 @@ function exportCompareXLSX(){
   const acct=v=>typeof v==='number'?v.toLocaleString('ko-KR'):'';
   const pct=v=>typeof v==='number'?v.toFixed(2)+'%':'';
   const rows=[];
-  rows.push(["d'strict B2G Simulator Vol.1.3.2 — 프로젝트 비교 분석","","","생성:",new Date().toLocaleString('ko-KR')]);
+  rows.push(["d'strict B2G Simulator Vol.1.3.3 — 프로젝트 비교 분석","","","생성:",new Date().toLocaleString('ko-KR')]);
   rows.push(["선택 프로젝트",...projects.map(p=>p.name)]);
   rows.push(["분석 일시",...projects.map(p=>p.ts)]);
   rows.push([]);
@@ -4017,7 +4263,7 @@ function captureSnapshot(fmt){
   // ── 헤더 바 ──
   ctx.fillStyle='#1a1a18';
   rr(PAD,PAD,W-PAD*2,HDR,{tl:16,tr:16,bl:0,br:0}); ctx.fill();
-  txt("d'strict B2G Simulator Vol.1.3.2", PAD+28, PAD+30, '700 22px Arial','#fff');
+  txt("d'strict B2G Simulator Vol.1.3.3", PAD+28, PAD+30, '700 22px Arial','#fff');
   txt(S.projectName||'프로젝트 미지정', PAD+28, PAD+56, '400 15px Arial','rgba(255,255,255,.55)');
   txt(new Date().toLocaleDateString('ko-KR'), W-PAD-28, PAD+42, '400 14px Arial','rgba(255,255,255,.55)','right');
   const bidLabel='투찰율 '+S.bid.toFixed(2)+'%';
@@ -4125,7 +4371,7 @@ function captureSnapshot(fmt){
 
   // ── 푸터 ──
   ctx.fillStyle='#e8e6df'; ctx.fillRect(PAD,H-PAD-20,W-PAD*2,1);
-  txt("d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭 · d'strict B2G Simulator Vol.1.3.2",
+  txt("d'strict 2026년 노임단가 기준 · 원 단위 미만 절삭 · d'strict B2G Simulator Vol.1.3.3",
     PAD+8, H-PAD-5, '400 13px Arial','#a3a29c');
 
   // ── 다운로드 ──
@@ -4254,8 +4500,19 @@ function bindActionBar(){
     history.replaceState(null,'',location.pathname);
     loadFromBin(binId).then(data=>{
       if(data&&(data.base||data.bid)){
-        Object.keys(data).filter(k=>!k.startsWith('_')).forEach(k=>{if(S[k]!==undefined)S[k]=data[k];});
+        // 모든 상태 복원 (_app, _ts, _ro 등 메타 키 제외)
+        const META_KEYS=new Set(['_app','_ts','_ro','_result']);
+        Object.keys(data).filter(k=>!k.startsWith('_')||!META_KEYS.has(k)).forEach(k=>{
+          if(S[k]!==undefined||['opex','memo','outsMemo','projectName','baseVatIncl'].includes(k))
+            S[k]=data[k];
+        });
+        // opex 별도 처리 (기존 저장 데이터 호환)
+        if(data.opex) S.opex=data.opex;
         saveAll();
+        // 공유 링크로 열람 시 읽기 전용 여부
+        if(data._ro) window._SHARE_READONLY=true;
+        // 저장된 결과값 복원
+        if(data._result) window._SHARE_RESULT=data._result;
         sessionStorage.setItem('b2g5_s','1');
       }
       startApp();
