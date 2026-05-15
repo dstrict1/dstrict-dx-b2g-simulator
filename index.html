@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>d'strict B2G Simulator Vol.1.4</title>
 <meta property="og:title" content="d'strict B2G Simulator Vol.1.4">
-<meta property="og:url" content="https://shin3164.github.io/dstrict-dx-b2g-simulator/">
+<meta property="og:url" content="https://dstrict1.github.io/dstrict-dx-b2g-simulator/">
 <meta property="og:description" content="d'strict B2G 전략 예산 시뮬레이터 — 공공사업 투찰율·손익 분석 도구">
 <style>
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
@@ -883,7 +883,7 @@ body{ line-height:1.5; }
     </div>
     <!-- 네비게이션 메뉴 -->
     <div id="tb-nav" style="display:flex;align-items:center;gap:2px;margin-left:12px">
-      <button class="tb-nav-btn on" data-page="simulator" onclick="switchPage('simulator')">
+      <button class="tb-nav-btn on" data-page="simulator" onclick="switchToSimulatorWithReset()">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         시뮬레이터
       </button>
@@ -920,7 +920,11 @@ body{ line-height:1.5; }
     </button>
     <span id="confirm-time" style="font-size:10px;color:var(--hint);letter-spacing:0.2px"></span>
     <div class="sep"></div>
-    <button class="act-btn purple" id="btn-save-project" onclick="saveCurrentProject()" title="현재 프로젝트 데이터 저장">
+    <button class="act-btn green always-active" id="btn-drive" onclick="openDriveModal()" title="Google Drive 저장/불러오기">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><polyline points="9 14 12 17 15 14"/><line x1="12" y1="11" x2="12" y2="17"/></svg>
+      <span class="act-btn-txt">Drive</span>
+    </button>
+        <button class="act-btn purple" id="btn-save-project" onclick="saveCurrentProject()" title="현재 프로젝트 데이터 저장">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
       프로젝트 저장
     </button>
@@ -952,7 +956,7 @@ body{ line-height:1.5; }
         <p style="font-size:13px;color:var(--muted);letter-spacing:0.2px">2026 KOSA 노임단가 기준 · SW사업 대가산정 가이드(2025 개정판)</p>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="home-menu-grid">
-        <div onclick="switchPage('simulator')" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;cursor:pointer;transition:border-color .15s,box-shadow .15s" onmouseover="this.style.borderColor='var(--purple)';this.style.boxShadow='0 4px 20px rgba(0,0,0,.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow=''">
+        <div onclick="switchToSimulatorWithReset()" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;cursor:pointer;transition:border-color .15s,box-shadow .15s" onmouseover="this.style.borderColor='var(--purple)';this.style.boxShadow='0 4px 20px rgba(0,0,0,.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow=''">
           <div style="width:44px;height:44px;border-radius:10px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           </div>
@@ -1267,7 +1271,7 @@ body{ line-height:1.5; }
             <strong>⚙️ 최초 1회 설정 필요</strong><br>
             <a href="https://jsonbin.io/app/app/api-keys" target="_blank" style="color:#185FA5;font-weight:600">jsonbin.io/app/app/api-keys</a> 접속 →
             <strong>B2G TEST</strong> 키 클릭 →
-            <strong>Allowed Hosts</strong>에 <code style="background:#fff;padding:1px 4px;border-radius:3px;font-size:10px">shin3164.github.io</code> 추가 후 저장<br>
+            <strong>Allowed Hosts</strong>에 <code style="background:#fff;padding:1px 4px;border-radius:3px;font-size:10px">dstrict1.github.io</code> 추가 후 저장<br>
             <span style="color:#a3a29c">이미 설정했다면 바로 링크 생성을 눌러주세요.</span>
           </div>
           <!-- 권한 -->
@@ -1425,6 +1429,9 @@ body{ line-height:1.5; }
 /* ============================================================
    CONSTANTS — d'strict B2G
 ============================================================ */
+const GAS_URL='https://script.google.com/macros/s/AKfycbz78eZXVH2CH5-rsWit_FHACtSG-ju2QZoZ9iOgFesux60isLl_LIkScZ9nwTXMR2jz/exec';
+function getSessionUserId(){let uid=localStorage.getItem('b2g_uid');if(!uid){uid='u_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem('b2g_uid',uid);}return uid;}
+const SESSION_USER_ID=getSessionUserId();
 const USERS=[
   {id:'admin',pw:'1234',name:'관리자',role:'admin'},
   {id:'user', pw:'pass',name:'일반 사용자',role:'user'},
@@ -4906,7 +4913,8 @@ function bindActionBar(){
   function startApp(){
     // 새 세션이면 기본값으로 초기화
     if(!sessionStorage.getItem('b2g5_s')){
-      ['base','bid','oh','tr','wd','gd','labor','outs','svc','indr','sc','memo'].forEach(k=>lsDel('b2g4_'+k));
+      const INPUT_KEYS=['base','bid','minBid','projectName','labor','outs','opex','svc','memo','outsMemo','baseVatIncl','sc'];
+      INPUT_KEYS.forEach(k=>lsDel('b2g4_'+k));
       sessionStorage.setItem('b2g5_s','1');
     }
     // 로그인 화면 건너뛰고 앱 바로 진입
@@ -4973,6 +4981,143 @@ document.addEventListener('scroll',function(){
     });
   }
 })();
+
+/* ============================================================
+   DRIVE + RESET PATCH — d'strict B2G Simulator Vol.1.4
+============================================================ */
+function resetSimulatorInputs(){
+  S.base=550000000;S.bid=87.99;S.minBid=70;S.projectName='';S.labor=[];S.outs=[];S.opex=[];
+  S.svc=0;S.memo='';S.outsMemo='';S.baseVatIncl=true;S.sc={worst:85,avg:90,best:95};
+  const INPUT_KEYS=['base','bid','minBid','projectName','labor','outs','opex','svc','memo','outsMemo','baseVatIncl','sc'];
+  INPUT_KEYS.forEach(k=>lsDel('b2g4_'+k));
+  BASELINE=null;IS_DIRTY=false;PENDING=false;
+  const btn=document.getElementById('btn-confirm'),txt=document.getElementById('btn-confirm-txt');
+  if(btn){btn.className='idle';if(txt)txt.textContent='변경 적용';}
+  const cbBtn=document.getElementById('btn-confirm-bar'),cbTxt=document.getElementById('btn-confirm-bar-txt');
+  if(cbBtn){cbBtn.style.background='';cbBtn.style.color='';cbBtn.style.boxShadow='';}
+  if(cbTxt)cbTxt.textContent='변경 적용';
+  const timeEl=document.getElementById('confirm-time');if(timeEl)timeEl.textContent='';
+  const diffEl=document.getElementById('diff-panel');if(diffEl){diffEl.className='';diffEl.innerHTML='';}
+  const ks=document.getElementById('kpi-sticky');if(ks)ks.style.display='none';
+  buildLeft();buildRight();autoSetScenarios();
+}
+function switchToSimulatorWithReset(){
+  const hasInput=S.projectName||S.labor.length>0||S.outs.length>0||S.base!==550000000;
+  if(!hasInput){switchPage('simulator');return;}
+  const old=document.getElementById('modal-reset-confirm');if(old)old.remove();
+  const modal=document.createElement('div');
+  modal.id='modal-reset-confirm';modal.className='modal-overlay';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML=`
+    <div style="background:var(--card);border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.18);width:100%;max-width:400px;overflow:hidden">
+      <div style="padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--amber-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">🔄</div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text)">새 시뮬레이션 시작</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">현재 입력값을 초기화하고 새로 시작합니다</div>
+        </div>
+      </div>
+      <div style="padding:18px 22px">
+        <div style="background:var(--bg);border-radius:9px;padding:13px 14px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.8">
+          <div style="font-weight:600;color:var(--text);margin-bottom:6px">초기화되는 항목</div>
+          <div>• 프로젝트명 / 기초금액 / 투찰율</div>
+          <div>• 투입 인력 목록</div>
+          <div>• 직접비 / 직접경비 / 운영경비</div>
+          <div>• 메모</div>
+          <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);color:var(--green);font-weight:600">
+            ✓ 유지: 노임단가 / 제경비율 / 기술료율 / 저장된 프로젝트
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="document.getElementById('modal-reset-confirm').remove()"
+            style="flex:1;padding:10px;font-size:12px;font-weight:600;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--muted);cursor:pointer;font-family:var(--font)">취소</button>
+          <button onclick="document.getElementById('modal-reset-confirm').remove();resetSimulatorInputs();switchPage('simulator');"
+            style="flex:1;padding:10px;font-size:12px;font-weight:700;border:none;border-radius:8px;background:var(--purple);color:#fff;cursor:pointer;font-family:var(--font)">초기화 후 시작</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
+}
+async function saveToDrive(){
+  if(!BASELINE){if(!confirm('변경 적용 전입니다. 현재 값으로 저장하시겠습니까?'))return;autoSetScenarios();BASELINE=snapshotResult();}
+  const name=S.projectName||('프로젝트_'+new Date().toLocaleDateString('ko-KR').replace(/\. /g,'').replace('.',''));
+  const payload={action:'save',userId:SESSION_USER_ID,projectName:name,
+    data:{_meta:{savedAt:new Date().toISOString(),version:'Vol.1.4'},state:JSON.parse(JSON.stringify(S)),result:BASELINE}};
+  const btn=document.getElementById('btn-drive-save');if(btn){btn.disabled=true;btn.textContent='저장 중...';}
+  try{
+    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(data.ok){showToast('☁️ Google Drive 저장 완료: '+data.fileName);saveCurrentProject();}
+    else showToast('❌ 저장 실패: '+data.error);
+  }catch(e){showToast('❌ 네트워크 오류: '+e.message);}
+  finally{if(btn){btn.disabled=false;btn.textContent='☁️ 현재 작업 Drive 저장';}}
+}
+async function loadDriveList(){
+  const el=document.getElementById('drive-file-list');if(!el)return;
+  el.innerHTML='<div style="text-align:center;padding:20px;color:var(--hint);font-size:12px">불러오는 중...</div>';
+  try{
+    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'list',userId:SESSION_USER_ID})});
+    const data=await res.json();
+    if(!data.ok){el.innerHTML='<div style="color:var(--red);font-size:12px;padding:12px">오류: '+data.error+'</div>';return;}
+    if(!data.files.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--hint);font-size:12px">저장된 파일이 없습니다</div>';return;}
+    el.innerHTML=data.files.map(f=>{
+      const dt=new Date(f.updatedAt).toLocaleString('ko-KR',{hour12:false}),kb=(f.size/1024).toFixed(1);
+      return`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);margin-bottom:7px;background:var(--card)">
+        <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.name}</div>
+        <div style="font-size:10px;color:var(--hint);margin-top:2px">${dt} · ${kb}KB</div></div>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          <button onclick="loadDriveFile('${f.fileId}','${f.name}')" style="padding:5px 10px;font-size:11px;font-weight:600;border:1px solid var(--border);border-radius:6px;background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:var(--font)">불러오기</button>
+          <button onclick="deleteDriveFile('${f.fileId}')" style="padding:5px 10px;font-size:11px;font-weight:600;border:1px solid var(--border);border-radius:6px;background:var(--red-bg);color:var(--red);cursor:pointer;font-family:var(--font)">삭제</button>
+        </div></div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<div style="color:var(--red);font-size:12px;padding:12px">네트워크 오류: '+e.message+'</div>';}
+}
+async function loadDriveFile(fileId,fileName){
+  if(!confirm(`"${fileName}"을 불러오시겠습니까?\n현재 입력값이 변경됩니다.`))return;
+  try{
+    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'load',fileId})});
+    const resp=await res.json();if(!resp.ok){showToast('❌ 불러오기 실패: '+resp.error);return;}
+    const{state,result}=resp.data;Object.assign(S,JSON.parse(JSON.stringify(state)));normalizeOutsData();
+    BASELINE=result||snapshotResult();IS_DIRTY=false;autoSetScenarios();
+    buildLeft();renderRightFull();updateKPIs();updateStickyKPI();removePendingOverlay();
+    closeModal('modal-drive');switchPage('simulator');showToast(`☁️ "${fileName}" 불러오기 완료`);
+  }catch(e){showToast('❌ 오류: '+e.message);}
+}
+async function deleteDriveFile(fileId){
+  if(!confirm('Drive에서 삭제하시겠습니까?'))return;
+  try{
+    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'delete',fileId})});
+    const data=await res.json();
+    if(data.ok){showToast('🗑️ 삭제 완료');loadDriveList();}else showToast('❌ 삭제 실패: '+data.error);
+  }catch(e){showToast('❌ 오류: '+e.message);}
+}
+function openDriveModal(){
+  let modal=document.getElementById('modal-drive');
+  if(!modal){
+    modal=document.createElement('div');modal.id='modal-drive';modal.className='modal-overlay';modal.style.display='none';
+    modal.innerHTML=`
+      <div class="modal-box" style="max-width:520px">
+        <div class="modal-head"><span class="modal-title">☁️ Google Drive 저장소</span><button class="modal-close" onclick="closeModal('modal-drive')">✕</button></div>
+        <div class="modal-body">
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <button onclick="saveToDrive()" id="btn-drive-save" style="flex:1;padding:10px;font-size:12px;font-weight:700;border:none;border-radius:8px;background:var(--teal);color:#fff;cursor:pointer;font-family:var(--font)">☁️ 현재 작업 Drive 저장</button>
+            <button onclick="loadDriveList()" style="padding:10px 14px;font-size:12px;font-weight:600;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--muted);cursor:pointer;font-family:var(--font)">🔄 새로고침</button>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px">저장된 파일</div>
+          <div id="drive-file-list"><div style="text-align:center;padding:20px;color:var(--hint);font-size:12px">새로고침을 눌러주세요</div></div>
+          <div style="margin-top:14px;padding:10px 12px;background:var(--bg);border-radius:8px;font-size:11px;color:var(--hint);line-height:1.7">
+            💡 이 기기 전용 저장소입니다. 팀 공유는 <strong style="color:var(--muted)">링크 공유</strong>를 사용하세요.
+          </div>
+        </div>
+        <div class="modal-foot"><button class="pre-btn" onclick="closeModal('modal-drive')">닫기</button></div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click',e=>{if(e.target===modal)closeModal('modal-drive');});
+  }
+  openModal('modal-drive');loadDriveList();
+}
+
 </script>
 </body>
 </html>
