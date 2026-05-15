@@ -1432,6 +1432,8 @@ body{ line-height:1.5; }
 const GAS_URL='https://script.google.com/macros/s/AKfycbz78eZXVH2CH5-rsWit_FHACtSG-ju2QZoZ9iOgFesux60isLl_LIkScZ9nwTXMR2jz/exec';
 function getSessionUserId(){let uid=localStorage.getItem('b2g_uid');if(!uid){uid='u_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem('b2g_uid',uid);}return uid;}
 const SESSION_USER_ID=getSessionUserId();
+// Drive는 팀 공유 저장소 — 고정 ID 사용
+const DRIVE_SHARED_ID='dstrict_b2g_shared';
 const USERS=[
   {id:'admin',pw:'1234',name:'관리자',role:'admin'},
   {id:'user', pw:'pass',name:'일반 사용자',role:'user'},
@@ -5042,7 +5044,7 @@ function switchToSimulatorWithReset(){
 async function saveToDrive(){
   if(!BASELINE){if(!confirm('변경 적용 전입니다. 현재 값으로 저장하시겠습니까?'))return;autoSetScenarios();BASELINE=snapshotResult();}
   const name=S.projectName||('프로젝트_'+new Date().toLocaleDateString('ko-KR').replace(/\. /g,'').replace('.',''));
-  const payload={action:'save',userId:SESSION_USER_ID,projectName:name,
+  const payload={action:'save',userId:DRIVE_SHARED_ID,projectName:name,
     data:{_meta:{savedAt:new Date().toISOString(),version:'Vol.1.4'},state:JSON.parse(JSON.stringify(S)),result:BASELINE}};
   const btn=document.getElementById('btn-drive-save');if(btn){btn.disabled=true;btn.textContent='저장 중...';}
   try{
@@ -5057,7 +5059,7 @@ async function loadDriveList(){
   const el=document.getElementById('drive-file-list');if(!el)return;
   el.innerHTML='<div style="text-align:center;padding:20px;color:var(--hint);font-size:12px">불러오는 중...</div>';
   try{
-    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'list',userId:SESSION_USER_ID})});
+    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'list',userId:DRIVE_SHARED_ID})});
     const data=await res.json();
     if(!data.ok){el.innerHTML='<div style="color:var(--red);font-size:12px;padding:12px">오류: '+data.error+'</div>';return;}
     if(!data.files.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--hint);font-size:12px">저장된 파일이 없습니다</div>';return;}
@@ -5107,7 +5109,7 @@ function openDriveModal(){
           <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px">저장된 파일</div>
           <div id="drive-file-list"><div style="text-align:center;padding:20px;color:var(--hint);font-size:12px">새로고침을 눌러주세요</div></div>
           <div style="margin-top:14px;padding:10px 12px;background:var(--bg);border-radius:8px;font-size:11px;color:var(--hint);line-height:1.7">
-            💡 이 기기 전용 저장소입니다. 팀 공유는 <strong style="color:var(--muted)">링크 공유</strong>를 사용하세요.
+            💡 d'strict 팀 공유 저장소입니다. Drive에 저장하면 팀원 누구나 불러올 수 있습니다.
           </div>
         </div>
         <div class="modal-foot"><button class="pre-btn" onclick="closeModal('modal-drive')">닫기</button></div>
