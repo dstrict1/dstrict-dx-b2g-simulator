@@ -1,197 +1,49 @@
-/* ============================================================
-   DRIVE + RESET PATCH — d'strict B2G Simulator Vol.1.4
-============================================================ */
+'?v.toFixed(2)+'%':''; const rows=[["d'strict B2G 비교분석","","생성:",new Date().toLocaleString('ko-KR')]]; rows.push(["프로젝트",...projects.map(p=>p.name)]); rows.push(["기초금액",...projects.map(p=>acct(p.state.base))]); rows.push(["투찰율",...projects.map(p=>pct(p.state.bid))]); rows.push(["매출액",...projects.map(p=>acct(p.result.rv))]); rows.push(["공헌이익",...projects.map(p=>acct(p.result.cn))]); rows.push(["공헌이익률",...projects.map(p=>pct(p.result.mg))]); download('﻿'+rows.map(r=>r.map(Q).join(',')).join('\r\n'),'B2G_비교_'+datestamp()+'.csv','text/csv;charset=utf-8'); } /* ── PAGE NAV ── */ let CURRENT_PAGE='simulator'; function switchPage(page){ const ks=document.getElementById('kpi-sticky');if(ks)ks.style.display=(page==='simulator'&&BASELINE)?'flex':'none'; CURRENT_PAGE=page; const pages={home:document.getElementById('page-home'),projects:document.getElementById('page-projects'),simulator:document.getElementById('main'),guide:document.getElementById('page-guide')}; Object.keys(pages).forEach(k=>{if(pages[k])pages[k].style.display=k===page?(k==='main'||k==='simulator'?'flex':'block'):'none';}); const showSim=page==='simulator'; ['action-bar','vat-banner'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=showSim?'flex':'none';}); const cb=document.getElementById('confirm-bar');if(cb)cb.style.display=showSim?'block':'none'; document.querySelectorAll('.tb-nav-btn').forEach(b=>b.classList.toggle('on',b.dataset.page===page||(page==='home'&&b.dataset.page==='simulator'))); if(page==='home')renderHomeRecent(); if(page==='projects'){autoCleanTrash();renderPPList();switchPPTab('list');} } function switchPPTab(tab){ document.querySelectorAll('.pp-tab').forEach(b=>{const on=b.dataset.pptab===tab;b.style.borderBottomColor=on?'var(--purple)':'transparent';b.style.color=on?'var(--purple)':'var(--muted)';b.style.fontWeight=on?'600':'500';}); ['list','compare','trash'].forEach(t=>{const el=document.getElementById('pp-'+t);if(el)el.style.display=t===tab?'block':'none';}); if(tab==='list')renderPPList();if(tab==='compare')renderPPCompare();if(tab==='trash'){autoCleanTrash();renderTrashList();} } function renderHomeRecent(){ const el=document.getElementById('home-recent');if(!el)return; const projects=getProjects().slice(0,3);if(!projects.length){el.innerHTML='';return;} const mgC=p=>p.result.mg>=10?'var(--kpi-green)':p.result.mg>=0?'var(--kpi-yellow)':'var(--kpi-red)'; el.innerHTML=`
+최근 저장된 프로젝트
+${projects.map(p=>`
+${p.name}
+${p.ts} · 기초 ${fmtW(p.state.base)} · 투찰 ${p.state.bid.toFixed(2)}%
+${p.result.mg.toFixed(1)}%
+`).join('')}
+`; } /* ── SNAPSHOT ── */ function getSnaps(){return lsGet('b2g4_snaps',[]);} function saveSnaps(s){lsSet('b2g4_snaps',s);} function saveSnapshot(name){const r=compute(S.bid);const snap={id:Date.now(),name:name||('스냅샷 '+(getSnaps().length+1)),ts:new Date().toLocaleString('ko-KR',{hour12:false}),state:JSON.parse(JSON.stringify(S)),result:{ct:r.ct,rv:r.rv,lc:r.lc,os:r.os,dt:r.dt,cn:r.cn,ic:r.ic,op:r.op,mg:r.mg}};const snaps=getSnaps();snaps.unshift(snap);if(snaps.length>10)snaps.pop();saveSnaps(snaps);renderSnapList();} function loadSnapshot(id){const snap=getSnaps().find(s=>s.id===id);if(!snap)return;Object.assign(S,JSON.parse(JSON.stringify(snap.state)));saveAll();buildLeft();buildRight();BASELINE=snap.result;const t=document.getElementById('confirm-time');if(t)t.textContent=snap.ts+' 스냅샷';closeModal('modal-snapshot');} function deleteSnapshot(id){saveSnaps(getSnaps().filter(s=>s.id!==id));renderSnapList();} function renderSnapList(){ const el=document.getElementById('snap-list');if(!el)return; const snaps=getSnaps();if(!snaps.length){el.innerHTML='
+저장된 스냅샷이 없습니다.
 
-// ── 입력값 초기화 ──
-function resetSimulatorInputs(){
-  S.base=550000000; S.bid=87.99; S.minBid=70;
-  S.projectName=''; S.labor=[]; S.outs=[]; S.opex=[];
-  S.svc=0; S.memo=''; S.outsMemo=''; S.baseVatIncl=true;
-  S.sc={worst:85,avg:90,best:95};
-  const INPUT_KEYS=['base','bid','minBid','projectName','labor','outs','opex','svc','memo','outsMemo','baseVatIncl','sc'];
-  INPUT_KEYS.forEach(k=>lsDel('b2g4_'+k));
-  BASELINE=null; IS_DIRTY=false; PENDING=false;
-  const btn=document.getElementById('btn-confirm');
-  const txt=document.getElementById('btn-confirm-txt');
-  if(btn){btn.className='idle';if(txt)txt.textContent='변경 적용';}
-  const cbBtn=document.getElementById('btn-confirm-bar');
-  const cbTxt=document.getElementById('btn-confirm-bar-txt');
-  if(cbBtn){cbBtn.style.background='';cbBtn.style.color='';cbBtn.style.boxShadow='';}
-  if(cbTxt)cbTxt.textContent='변경 적용';
-  const timeEl=document.getElementById('confirm-time');
-  if(timeEl)timeEl.textContent='';
-  const diffEl=document.getElementById('diff-panel');
-  if(diffEl){diffEl.className='';diffEl.innerHTML='';}
-  const ks=document.getElementById('kpi-sticky');
-  if(ks)ks.style.display='none';
-  buildLeft(); buildRight(); autoSetScenarios();
-}
-
-// ── 시뮬레이터 이동 with 초기화 확인 ──
-function switchToSimulatorWithReset(){
-  const hasInput=S.projectName||S.labor.length>0||S.outs.length>0||S.base!==550000000;
-  if(!hasInput){switchPage('simulator');return;}
-  const old=document.getElementById('modal-reset-confirm');
-  if(old)old.remove();
-  const modal=document.createElement('div');
-  modal.id='modal-reset-confirm';
-  modal.className='modal-overlay';
-  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px';
-  modal.innerHTML=`
-    <div style="background:var(--card);border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.18);width:100%;max-width:400px;overflow:hidden">
-      <div style="padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
-        <div style="width:40px;height:40px;border-radius:10px;background:var(--amber-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">🔄</div>
-        <div>
-          <div style="font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.3px">새 시뮬레이션 시작</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">현재 입력값을 초기화하고 새로 시작합니다</div>
-        </div>
-      </div>
-      <div style="padding:18px 22px">
-        <div style="background:var(--bg);border-radius:9px;padding:13px 14px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.8">
-          <div style="font-weight:600;color:var(--text);margin-bottom:6px">초기화되는 항목</div>
-          <div>• 프로젝트명 / 기초금액 / 투찰율</div>
-          <div>• 투입 인력 목록</div>
-          <div>• 직접비 / 직접경비 / 운영경비</div>
-          <div>• 메모</div>
-          <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);color:var(--green);font-weight:600">
-            ✓ 유지: 노임단가 / 제경비율 / 기술료율 / 저장된 프로젝트
-          </div>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button onclick="document.getElementById('modal-reset-confirm').remove()"
-            style="flex:1;padding:10px;font-size:12px;font-weight:600;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--muted);cursor:pointer;font-family:var(--font)">취소</button>
-          <button onclick="document.getElementById('modal-reset-confirm').remove();resetSimulatorInputs();switchPage('simulator');"
-            style="flex:1;padding:10px;font-size:12px;font-weight:700;border:none;border-radius:8px;background:var(--purple);color:#fff;cursor:pointer;font-family:var(--font)">초기화 후 시작</button>
-        </div>
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
-  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
-}
-
-// ── Google Drive 저장 ──
-async function saveToDrive(){
-  if(!BASELINE){
-    if(!confirm('변경 적용 전입니다. 현재 값으로 저장하시겠습니까?'))return;
-    autoSetScenarios(); BASELINE=snapshotResult();
-  }
-  const name=S.projectName||('프로젝트_'+new Date().toLocaleDateString('ko-KR').replace(/\.\s/g,'').replace('.',''));
-  const payload={action:'save',userId:SESSION_USER_ID,projectName:name,
-    data:{_meta:{savedAt:new Date().toISOString(),version:'Vol.1.4'},state:JSON.parse(JSON.stringify(S)),result:BASELINE}};
-  const btn=document.getElementById('btn-drive-save');
-  if(btn){btn.disabled=true;btn.textContent='저장 중...';}
-  try{
-    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
-    const data=await res.json();
-    if(data.ok){showToast('☁️ Google Drive 저장 완료: '+data.fileName);saveCurrentProject();}
-    else showToast('❌ 저장 실패: '+data.error);
-  }catch(e){showToast('❌ 네트워크 오류: '+e.message);}
-  finally{if(btn){btn.disabled=false;btn.textContent='☁️ 현재 작업 Drive 저장';}}
-}
-
-// ── Drive 파일 목록 ──
-async function loadDriveList(){
-  const el=document.getElementById('drive-file-list');
-  if(!el)return;
-  el.innerHTML='<div style="text-align:center;padding:20px;color:var(--hint);font-size:12px">불러오는 중...</div>';
-  try{
-    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({action:'list',userId:SESSION_USER_ID})});
-    const data=await res.json();
-    if(!data.ok){el.innerHTML='<div style="color:var(--red);font-size:12px;padding:12px">오류: '+data.error+'</div>';return;}
-    if(!data.files.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--hint);font-size:12px">저장된 파일이 없습니다</div>';return;}
-    el.innerHTML=data.files.map(f=>{
-      const dt=new Date(f.updatedAt).toLocaleString('ko-KR',{hour12:false});
-      const kb=(f.size/1024).toFixed(1);
-      return`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);margin-bottom:7px;background:var(--card)">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.name}</div>
-          <div style="font-size:10px;color:var(--hint);margin-top:2px">${dt} · ${kb}KB</div>
-        </div>
-        <div style="display:flex;gap:5px;flex-shrink:0">
-          <button onclick="loadDriveFile('${f.fileId}','${f.name}')"
-            style="padding:5px 10px;font-size:11px;font-weight:600;border:1px solid var(--border);border-radius:6px;background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:var(--font)">불러오기</button>
-          <button onclick="deleteDriveFile('${f.fileId}')"
-            style="padding:5px 10px;font-size:11px;font-weight:600;border:1px solid var(--border);border-radius:6px;background:var(--red-bg);color:var(--red);cursor:pointer;font-family:var(--font)">삭제</button>
-        </div>
-      </div>`;
-    }).join('');
-  }catch(e){el.innerHTML='<div style="color:var(--red);font-size:12px;padding:12px">네트워크 오류: '+e.message+'</div>';}
-}
-
-// ── Drive 파일 불러오기 ──
-async function loadDriveFile(fileId,fileName){
-  if(!confirm(`"${fileName}"을 불러오시겠습니까?\n현재 입력값이 변경됩니다.`))return;
-  try{
-    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({action:'load',fileId})});
-    const resp=await res.json();
-    if(!resp.ok){showToast('❌ 불러오기 실패: '+resp.error);return;}
-    const{state,result}=resp.data;
-    Object.assign(S,JSON.parse(JSON.stringify(state)));
-    normalizeOutsData();
-    BASELINE=result||snapshotResult();
-    IS_DIRTY=false;
-    autoSetScenarios();
-    buildLeft(); renderRightFull(); updateKPIs(); updateStickyKPI(); removePendingOverlay();
-    closeModal('modal-drive'); switchPage('simulator');
-    showToast(`☁️ "${fileName}" 불러오기 완료`);
-  }catch(e){showToast('❌ 오류: '+e.message);}
-}
-
-// ── Drive 파일 삭제 ──
-async function deleteDriveFile(fileId){
-  if(!confirm('Drive에서 삭제하시겠습니까?'))return;
-  try{
-    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({action:'delete',fileId})});
-    const data=await res.json();
-    if(data.ok){showToast('🗑️ 삭제 완료');loadDriveList();}
-    else showToast('❌ 삭제 실패: '+data.error);
-  }catch(e){showToast('❌ 오류: '+e.message);}
-}
-
-// ── Drive 모달 열기 ──
-function openDriveModal(){
-  let modal=document.getElementById('modal-drive');
-  if(!modal){
-    modal=document.createElement('div');
-    modal.id='modal-drive';
-    modal.className='modal-overlay';
-    modal.style.display='none';
-    modal.innerHTML=`
-      <div class="modal-box" style="max-width:520px">
-        <div class="modal-head">
-          <span class="modal-title">☁️ Google Drive 저장소</span>
-          <button class="modal-close" onclick="closeModal('modal-drive')">✕</button>
-        </div>
-        <div class="modal-body">
-          <div style="display:flex;gap:8px;margin-bottom:16px">
-            <button onclick="saveToDrive()" id="btn-drive-save"
-              style="flex:1;padding:10px;font-size:12px;font-weight:700;border:none;border-radius:8px;background:var(--green);color:#fff;cursor:pointer;font-family:var(--font)">
-              ☁️ 현재 작업 Drive 저장
-            </button>
-            <button onclick="loadDriveList()"
-              style="padding:10px 14px;font-size:12px;font-weight:600;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--muted);cursor:pointer;font-family:var(--font)">
-              🔄 목록 새로고침
-            </button>
-          </div>
-          <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px">저장된 파일</div>
-          <div id="drive-file-list">
-            <div style="text-align:center;padding:20px;color:var(--hint);font-size:12px">목록 새로고침을 눌러주세요</div>
-          </div>
-          <div style="margin-top:14px;padding:10px 12px;background:var(--bg);border-radius:8px;font-size:11px;color:var(--hint);line-height:1.7">
-            💡 이 기기 전용 저장소입니다.<br>
-            팀 공유가 필요하면 <strong style="color:var(--muted)">링크 공유</strong> 기능을 사용하세요.
-          </div>
-        </div>
-        <div class="modal-foot">
-          <button class="pre-btn" onclick="closeModal('modal-drive')">닫기</button>
-        </div>
-      </div>`;
-    document.body.appendChild(modal);
-    modal.addEventListener('click',e=>{if(e.target===modal)closeModal('modal-drive');});
-  }
-  openModal('modal-drive');
-  loadDriveList();
-}
+';return;} el.innerHTML=snaps.map(s=>{const mc=s.result.mg>=10?'var(--green-bg),#c0dd97,var(--kpi-green)':s.result.mg>=0?'var(--amber-bg),#f0d9a0,var(--kpi-yellow)':'var(--red-bg),#f5b7b7,var(--kpi-red)';const[bg,bdr,col]=mc.split(',');return`
+${s.name}
+${s.ts} · 기초금액 ${fmtW(s.state.base)} · 투찰율 ${s.state.bid.toFixed(2)}%
+${s.result.mg.toFixed(2)}%
+불러오기삭제
+`;}).join(''); } /* ── MODAL ── */ function openModal(id){const el=document.getElementById(id);if(el)el.style.display='flex';if(id==='modal-snapshot')renderSnapList();if(id==='modal-share')resetShareModal();} function closeModal(id){const el=document.getElementById(id);if(el)el.style.display='none';} function bindActionBar(){ document.getElementById('btn-confirm').addEventListener('click',doConfirm); document.getElementById('btn-export').addEventListener('click',()=>{if(!IS_READONLY)openModal('modal-export');}); document.getElementById('btn-share').addEventListener('click',()=>openModal('modal-share')); document.getElementById('btn-snapshot').addEventListener('click',()=>{if(!IS_READONLY)openModal('modal-snapshot');}); document.addEventListener('click',e=>{const close=e.target.dataset.close||e.target.closest('[data-close]')?.dataset?.close;if(close){closeModal(close);return;}if(e.target.classList.contains('modal-overlay'))closeModal(e.target.id);}); document.getElementById('exp-xlsx-dstrict').addEventListener('click',()=>{exportDstrictXLSX();closeModal('modal-export');}); document.getElementById('exp-pptx-dstrict').addEventListener('click',()=>{exportDstrictPPTX();closeModal('modal-export');}); document.getElementById('exp-docx-dstrict').addEventListener('click',()=>{exportDstrictDOCX();closeModal('modal-export');}); document.getElementById('exp-csv').addEventListener('click',()=>{download(buildExcel(),'B2G_'+datestamp()+'.csv','text/csv;charset=utf-8');closeModal('modal-export');}); document.getElementById('exp-json').addEventListener('click',()=>{download(buildWordReport(),'B2G_'+datestamp()+'_보고서.txt','text/plain;charset=utf-8');closeModal('modal-export');}); document.getElementById('exp-txt').addEventListener('click',()=>{download(buildPPTNotes(),'B2G_'+datestamp()+'_PPT노트.txt','text/plain;charset=utf-8');closeModal('modal-export');}); document.getElementById('btn-snap-save').addEventListener('click',()=>{const name=document.getElementById('snap-name-inp').value.trim();saveSnapshot(name||undefined);document.getElementById('snap-name-inp').value='';}); } /* ── CANVAS SNAPSHOT ── */ function captureSnapshot(fmt){ if(!BASELINE){autoSetScenarios();BASELINE=snapshotResult();} const r=compute(S.bid),mms=getMMs(); const W=1920,H=1080,PAD=48,HDR=72; const cv=document.createElement('canvas');cv.width=W;cv.height=H; const ctx=cv.getContext('2d'); function rr(x,y,w,h,rad){if(typeof rad==='number')rad={tl:rad,tr:rad,bl:rad,br:rad};ctx.beginPath();ctx.moveTo(x+rad.tl,y);ctx.lineTo(x+w-rad.tr,y);ctx.quadraticCurveTo(x+w,y,x+w,y+rad.tr);ctx.lineTo(x+w,y+h-rad.br);ctx.quadraticCurveTo(x+w,y+h,x+w-rad.br,y+h);ctx.lineTo(x+rad.bl,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-rad.bl);ctx.lineTo(x,y+rad.tl);ctx.quadraticCurveTo(x,y,x+rad.tl,y);ctx.closePath();} const txt=(t,x,y,font,col,align='left')=>{ctx.font=font;ctx.fillStyle=col;ctx.textAlign=align;ctx.fillText(t,x,y);ctx.textAlign='left';}; const cnColor=r.cn>=0?(r.cnr>=20?'#00B050':'#CC9900'):'#C00000'; ctx.fillStyle='#f6f5f0';ctx.fillRect(0,0,W,H); ctx.fillStyle='#fff';rr(PAD,PAD,W-PAD*2,H-PAD*2,16);ctx.fill(); ctx.fillStyle='#1a1a18';rr(PAD,PAD,W-PAD*2,HDR,{tl:16,tr:16,bl:0,br:0});ctx.fill(); txt("d'strict B2G Simulator Vol.1.4",PAD+28,PAD+30,'700 22px Arial','#fff'); txt(S.projectName||'프로젝트 미지정',PAD+28,PAD+56,'400 15px Arial','rgba(255,255,255,.55)'); txt('투찰율 '+S.bid.toFixed(2)+'%',W-PAD-28,PAD+42,'600 14px Arial','rgba(255,255,255,.8)','right'); const kpis=[{label:'투찰금액',value:fmtW(r.ct),sub:'VAT포함',col:'#1a1a18',bg:'#f6f5f0',bdr:'#e8e6df'},{label:'매출액',value:fmtW(r.rv),sub:'VAT별도',col:'#185FA5',bg:'#E6F1FB',bdr:'#b5d4f4'},{label:'직접비(외주비)',value:fmtW(r.os),sub:'외주',col:'#534AB7',bg:'#EEEDFE',bdr:'#c4b5fd'},{label:'직접경비+운영',value:fmtW(r.svc+r.opex),sub:'경비',col:'#854F0B',bg:'#FAEEDA',bdr:'#f0d9a0'},{label:'공헌이익',value:fmtW(r.cn),sub:r.cnr.toFixed(2)+'%',col:cnColor,bg:r.cn>=0?'#EAF3DE':'#FCEBEB',bdr:r.cn>=0?'#c0dd97':'#f5b7b7'},{label:'공헌이익률',value:r.cnr.toFixed(2)+'%',sub:r.cnr>=20?'✓ 목표':r.cn>=0?'△ 주의':'✕ 적자',col:cnColor,bg:r.cn>=0?'#EAF3DE':'#FCEBEB',bdr:r.cn>=0?'#c0dd97':'#f5b7b7'}]; const ky=PAD+HDR+20,kh=100,kgap=12,kw=Math.floor((W-PAD*2-kgap*5)/6); kpis.forEach((k,i)=>{const x=PAD+i*(kw+kgap);ctx.fillStyle=k.bg;rr(x,ky,kw,kh,10);ctx.fill();ctx.strokeStyle=k.bdr;ctx.lineWidth=1.5;rr(x,ky,kw,kh,10);ctx.stroke();txt(k.label,x+16,ky+22,'500 13px Arial','#73726c');txt(k.value,x+16,ky+58,'700 22px Arial',k.col);txt(k.sub,x+16,ky+82,'400 13px Arial','#a3a29c');}); const mime=fmt==='jpeg'?'image/jpeg':'image/png',ext=fmt==='jpeg'?'jpg':'png'; cv.toBlob(blob=>{const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='B2G_'+datestamp()+'_'+(S.projectName||'snapshot')+'.'+ext;document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},200);},mime,0.95); closeModal('modal-snapshot'); } /* ── BOOT ── */ (function(){ const binId=new URLSearchParams(location.search).get('bin'); if(binId){ history.replaceState(null,'',location.pathname); loadFromBin(binId).then(data=>{ if(data&&(data.base||data.bid)){ const META_KEYS=new Set(['_app','_ts','_ro','_result']); Object.keys(data).filter(k=>!META_KEYS.has(k)).forEach(k=>{if(S[k]!==undefined||['opex','memo','outsMemo','projectName','baseVatIncl'].includes(k))S[k]=data[k];}); if(data.opex)S.opex=data.opex;saveAll(); if(data._ro)window._SHARE_READONLY=true; if(data._result)window._SHARE_RESULT=data._result; sessionStorage.setItem('b2g5_s','1'); } startApp(); }); } else {startApp();} function startApp(){ // 새 세션이면 입력값 초기화 (노임단가/제경비율 유지) if(!sessionStorage.getItem('b2g5_s')){ const INPUT_KEYS=['base','bid','minBid','projectName','labor','outs','opex','svc','memo','outsMemo','baseVatIncl','sc']; INPUT_KEYS.forEach(k=>lsDel('b2g4_'+k)); sessionStorage.setItem('b2g5_s','1'); } CURRENT_USER={id:'public',name:'',role:'admin'};IS_READONLY=false; document.getElementById('screen-login').classList.remove('active'); document.getElementById('app').classList.add('active'); normalizeOutsData(); buildLeft();bindActionBar();initPanelState();autoSetScenarios(); if(window._SHARE_RESULT){ BASELINE=window._SHARE_RESULT;IS_DIRTY=false; buildRight();renderRightFull();updateKPIs();updateStickyKPI();removePendingOverlay(); if(window._SHARE_READONLY){IS_READONLY=true;document.body.classList.add('readonly');const cb=document.getElementById('confirm-bar');if(cb)cb.style.display='none';} const timeEl=document.getElementById('confirm-time');if(timeEl)timeEl.textContent='공유 링크로 불러옴'; showToast('✅ 공유 데이터를 불러왔습니다.'); delete window._SHARE_RESULT;delete window._SHARE_READONLY; } else { buildRight();BASELINE=null;document.getElementById('confirm-time').textContent=''; } switchPage('simulator'); } })(); /* ── 툴팁 ── */ document.addEventListener('mouseover',function(e){ const wrap=e.target.closest('.tip-wrap');if(!wrap)return; document.querySelectorAll('.tip-box').forEach(b=>{if(b!==wrap.querySelector('.tip-box')){b.style.display='none';b.style.visibility='hidden';b.style.opacity='0';}}); const box=wrap.querySelector('.tip-box');if(!box)return; box.style.display='block';box.style.visibility='visible';box.style.opacity='1'; const iconRect=wrap.getBoundingClientRect(),bW=box.offsetWidth||240,bH=box.offsetHeight||80,vW=window.innerWidth; let top=iconRect.top-bH-8,left=iconRect.left+iconRect.width/2-16; if(top<8)top=iconRect.bottom+8;if(left+bW>vW-8)left=vW-bW-8;if(left<8)left=8; box.style.top=top+'px';box.style.left=left+'px'; },true); document.addEventListener('mouseout',function(e){const wrap=e.target.closest('.tip-wrap');if(!wrap)return;if(!wrap.contains(e.relatedTarget)){const box=wrap.querySelector('.tip-box');if(box){box.style.display='none';box.style.visibility='hidden';box.style.opacity='0';}}},true); document.addEventListener('scroll',function(){document.querySelectorAll('.tip-box').forEach(b=>{b.style.display='none';b.style.visibility='hidden';b.style.opacity='0';});},true); /* ── Drive + Reset 패치 ── */ function resetSimulatorInputs(){ S.base=550000000;S.bid=87.99;S.minBid=70;S.projectName='';S.labor=[];S.outs=[];S.opex=[];S.svc=0;S.memo='';S.outsMemo='';S.baseVatIncl=true;S.sc={worst:85,avg:90,best:95}; const INPUT_KEYS=['base','bid','minBid','projectName','labor','outs','opex','svc','memo','outsMemo','baseVatIncl','sc']; INPUT_KEYS.forEach(k=>lsDel('b2g4_'+k)); BASELINE=null;IS_DIRTY=false;PENDING=false; const btn=document.getElementById('btn-confirm'),txt=document.getElementById('btn-confirm-txt');if(btn){btn.className='idle';if(txt)txt.textContent='변경 적용';} const cbBtn=document.getElementById('btn-confirm-bar'),cbTxt=document.getElementById('btn-confirm-bar-txt');if(cbBtn){cbBtn.style.background='';cbBtn.style.color='';cbBtn.style.boxShadow='';}if(cbTxt)cbTxt.textContent='변경 적용'; const timeEl=document.getElementById('confirm-time');if(timeEl)timeEl.textContent=''; const diffEl=document.getElementById('diff-panel');if(diffEl){diffEl.className='';diffEl.innerHTML='';} const ks=document.getElementById('kpi-sticky');if(ks)ks.style.display='none'; buildLeft();buildRight();autoSetScenarios(); } function switchToSimulatorWithReset(){ const hasInput=S.projectName||S.labor.length>0||S.outs.length>0||S.base!==550000000; if(!hasInput){switchPage('simulator');return;} const old=document.getElementById('modal-reset-confirm');if(old)old.remove(); const modal=document.createElement('div');modal.id='modal-reset-confirm';modal.className='modal-overlay'; modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px'; modal.innerHTML=`
+🔄
+새 시뮬레이션 시작
+현재 입력값을 초기화하고 새로 시작합니다
+초기화되는 항목
+• 프로젝트명 / 기초금액 / 투찰율
+• 투입 인력 목록
+• 직접비 / 직접경비 / 운영경비
+• 메모
+✓ 유지: 노임단가 / 제경비율 / 기술료율 / 저장된 프로젝트
+취소
+초기화 후 시작
+`; document.body.appendChild(modal);modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();}); } async function saveToDrive(){ if(!BASELINE){if(!confirm('변경 적용 전입니다. 현재 값으로 저장하시겠습니까?'))return;autoSetScenarios();BASELINE=snapshotResult();} const name=S.projectName||('프로젝트_'+new Date().toLocaleDateString('ko-KR').replace(/\.\s/g,'').replace('.','')); const payload={action:'save',userId:SESSION_USER_ID,projectName:name,data:{_meta:{savedAt:new Date().toISOString(),version:'Vol.1.4'},state:JSON.parse(JSON.stringify(S)),result:BASELINE}}; const btn=document.getElementById('btn-drive-save');if(btn){btn.disabled=true;btn.textContent='저장 중...';} try{const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});const data=await res.json();if(data.ok){showToast('☁️ Google Drive 저장 완료: '+data.fileName);saveCurrentProject();}else showToast('❌ 저장 실패: '+data.error);}catch(e){showToast('❌ 네트워크 오류: '+e.message);} finally{if(btn){btn.disabled=false;btn.textContent='☁️ 현재 작업 Drive 저장';}} } async function loadDriveList(){ const el=document.getElementById('drive-file-list');if(!el)return; el.innerHTML='
+불러오는 중...
+'; try{ const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'list',userId:SESSION_USER_ID})}); const data=await res.json(); if(!data.ok){el.innerHTML='
+오류: '+data.error+'
+';return;} if(!data.files.length){el.innerHTML='
+저장된 파일이 없습니다
+';return;} el.innerHTML=data.files.map(f=>{const dt=new Date(f.updatedAt).toLocaleString('ko-KR',{hour12:false}),kb=(f.size/1024).toFixed(1);return`
+${f.name}
+${dt} · ${kb}KB
+불러오기
+삭제
+`;}).join(''); }catch(e){el.innerHTML='
+네트워크 오류: '+e.message+'
+';} } async function loadDriveFile(fileId,fileName){ if(!confirm(`"${fileName}"을 불러오시겠습니까?\n현재 입력값이 변경됩니다.`))return; try{ const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'load',fileId})}); const resp=await res.json();if(!resp.ok){showToast('❌ 불러오기 실패: '+resp.error);return;} const{state,result}=resp.data;Object.assign(S,JSON.parse(JSON.stringify(state)));normalizeOutsData(); BASELINE=result||snapshotResult();IS_DIRTY=false;autoSetScenarios(); buildLeft();renderRightFull();updateKPIs();updateStickyKPI();removePendingOverlay(); closeModal('modal-drive');switchPage('simulator');showToast(`☁️ "${fileName}" 불러오기 완료`); }catch(e){showToast('❌ 오류: '+e.message);} } async function deleteDriveFile(fileId){ if(!confirm('Drive에서 삭제하시겠습니까?'))return; try{const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'delete',fileId})});const data=await res.json();if(data.ok){showToast('🗑️ 삭제 완료');loadDriveList();}else showToast('❌ 삭제 실패: '+data.error);}catch(e){showToast('❌ 오류: '+e.message);} } function openDriveModal(){ let modal=document.getElementById('modal-drive'); if(!modal){ modal=document.createElement('div');modal.id='modal-drive';modal.className='modal-overlay';modal.style.display='none'; modal.innerHTML=`
+☁️ Google Drive 저장소✕
+☁️ 현재 작업 Drive 저장
+🔄 새로고침
+저장된 파일
+새로고침을 눌러주세요
+💡 이 기기 전용 저장소입니다. 팀 공유는 링크 공유를 사용하세요.
+닫기
+`; document.body.appendChild(modal);modal.addEventListener('click',e=>{if(e.target===modal)closeModal('modal-drive');}); } openModal('modal-drive');loadDriveList(); }
