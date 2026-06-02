@@ -1595,8 +1595,8 @@ function _getSess(){try{return JSON.parse(sessionStorage.getItem('b2g_sess_v1')|
 function _setSess(u){sessionStorage.setItem('b2g_sess_v1',JSON.stringify({id:u.id,name:u.name,role:u.role,at:Date.now()}));}
 function _clrSess(){sessionStorage.removeItem('b2g_sess_v1');}
 /* ── 기본 탭: 일반 사용자 없으면 회원가입 ── */
-function _defaultTab(){return _getUsers().filter(u=>u.role!=='admin').length===0?'signup':'login';}
-function _renderAuthUI(){
+window._defaultTab=function(){return _getUsers().filter(u=>u.role!=='admin').length===0?'signup':'login';};
+window._renderAuthUI=function _renderAuthUI(){
   const card=document.querySelector('#screen-login .login-card');if(!card)return;
   const dt=_defaultTab();
   card.innerHTML='<div class="login-logo"><div class="login-logo-mark"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div><div class="login-title">B2G 전략 예산 시뮬레이터</div><div class="login-sub">2026년 노임단가 · 2025 개정 가이드 기준</div></div>'
