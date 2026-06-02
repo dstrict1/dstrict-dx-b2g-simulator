@@ -5131,16 +5131,7 @@ window._doSignup=function(){const id=(document.getElementById('su-id')?.value||'
   }
 })();s','1');
     }
-    // 로그인 화면 건너뛰고 앱 바로 진입
-    CURRENT_USER={id:'public',name:'',role:'admin'};
-    IS_READONLY=false;
-    document.getElementById('screen-login').classList.remove('active');
-    document.getElementById('app').classList.add('active');
-    buildLeft();buildRight();bindActionBar();
-    autoSetScenarios();
-    BASELINE=null;
-    document.getElementById('confirm-time').textContent='';
-    switchPage('simulator');
+    _initAdmin();const _s=_getSess();if(_s){const _v=_getUsers().find(u=>u.id===_s.id&&u.status==='active');if(_v){CURRENT_USER={id:_v.id,name:_v.name,role:_v.role};IS_READONLY=false;if(!sessionStorage.getItem('b2g5_s')){['base','bid','minBid','projectName','labor','outs','opex','svc','memo','outsMemo','baseVatIncl','sc'].forEach(k=>lsDel('b2g4_'+k));sessionStorage.setItem('b2g5_s','1');}document.getElementById('screen-login').classList.remove('active');document.getElementById('app').classList.add('active');buildLeft();buildRight();bindActionBar();autoSetScenarios();BASELINE=null;document.getElementById('confirm-time').textContent='';switchPage('simulator');if(typeof _authAfterLogin==='function')_authAfterLogin();return;}_clrSess();}sessionStorage.removeItem('b2g5_s');document.getElementById('app').classList.remove('active');document.getElementById('screen-login').classList.add('active');_renderAuthUI();
   }
 })();
 
