@@ -36,43 +36,7 @@ window._doSignup=function(){
     card.appendChild(wrap);
   }
 };
-window._renderAuthUI=function(){
-  var card=document.querySelector("#screen-login .login-card");
-  if(!card)return;
-  var dt=window._defaultTab();
-  var ll=dt==="login"?"block":"none";
-  var sl=dt==="signup"?"block":"none";
-  var lo=dt==="login"?"on":"";
-  var so=dt==="signup"?"on":"";
-  card.innerHTML="";
-  var t=document.createElement("template");
-  t.innerHTML=[
-    "<div class=\"login-logo\"><div class=\"login-logo-mark\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#534AB7\" stroke-width=\"2\"><polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\"></polyline><polyline points=\"16 7 22 7 22 13\"></polyline></svg></div>",
-    "<div class=\"login-title\">B2G 전략 예산 시뮬레이터</div>",
-    "<div class=\"login-sub\">2026년 노임단가 · 2025 개정 가이드 기준</div></div>",
-    "<div class=\"at-row\">",
-    "<button class=\"at-btn "+lo+"\" id=\"at-login\" onclick=\"window._authTab('login')\">로그인</button>",
-    "<button class=\"at-btn "+so+"\" id=\"at-signup\" onclick=\"window._authTab('signup')\">회원가입</button>",
-    "</div>",
-    "<div id=\"af-login\" style=\"display:"+ll+"\">",
-    "<div class=\"login-field\"><label>아이디</label><input id=\"inp-uid\" type=\"text\" class=\"login-input\" placeholder=\"아이디 입력\" autocomplete=\"username\"></div>",
-    "<div class=\"login-field\"><label>비밀번호</label><input id=\"inp-pw\" type=\"password\" class=\"login-input\" placeholder=\"비밀번호 입력\" autocomplete=\"current-password\"></div>",
-    "<div id=\"login-err\" class=\"login-error\"></div>",
-    "<button class=\"login-btn\" onclick=\"doLogin()\">로그인</button>",
-    "</div>",
-    "<div id=\"af-signup\" style=\"display:"+sl+"\">",
-    "<div class=\"login-field\"><label>아이디</label><input id=\"su-id\" type=\"text\" class=\"login-input\" placeholder=\"영문 숫자 4~20자\" oninput=\"window._chkId()\"><div id=\"su-id-msg\" style=\"font-size:11px;margin-top:4px;min-height:16px\"></div></div>",
-    "<div class=\"login-field\"><label>이름</label><input id=\"su-nm\" type=\"text\" class=\"login-input\" placeholder=\"실명\"></div>",
-    "<div class=\"login-field\"><label>이메일</label><input id=\"su-em\" type=\"email\" class=\"login-input\" placeholder=\"example@dstrict.com\"></div>",
-    "<div class=\"login-field\"><label>비밀번호</label><input id=\"su-pw\" type=\"password\" class=\"login-input\" placeholder=\"8자 이상\" oninput=\"window._chkPw()\"><div id=\"su-pw-msg\" style=\"font-size:11px;margin-top:4px;min-height:16px\"></div></div>",
-    "<div class=\"login-field\"><label>비밀번호 확인</label><input id=\"su-pw2\" type=\"password\" class=\"login-input\" placeholder=\"재입력\"></div>",
-    "<div id=\"signup-err\" class=\"login-error\"></div>",
-    "<button class=\"login-btn\" onclick=\"window._doSignup()\" style=\"background:var(--teal,#0F6E56)\">가입 신청</button>",
-    "<div style=\"margin-top:10px;padding:10px 12px;background:var(--amber-bg);border-radius:7px;font-size:11px;color:var(--amber)\">가입 신청 후 관리자 승인이 완료되어야 로그인 가능합니다.</div>",
-    "</div>"
-  ].join("");
-  card.appendChild(t.content.cloneNode(true));
-};
+window._renderAuthUI=function(){var card=document.querySelector("#screen-login .login-card");if(!card)return;var dt=window._defaultTab();card.innerHTML="";function mk(tag,attrs,txt){var el=document.createElement(tag);if(attrs)Object.keys(attrs).forEach(function(k){if(k==="style")el.style.cssText=attrs[k];else if(k==="class")el.className=attrs[k];else el.setAttribute(k,attrs[k]);});if(txt!==undefined)el.textContent=txt;return el;}var logo=mk("div",{"class":"login-logo"});logo.innerHTML="<div class='login-logo-mark'><svg width='26' height='26' viewBox='0 0 24 24' fill='none' stroke='#534AB7' stroke-width='2'><polyline points='22 7 13.5 15.5 8.5 10.5 2 17'></polyline><polyline points='16 7 22 7 22 13'></polyline></svg></div><div class='login-title'>B2G 전략 예산 시뮬레이터</div><div class='login-sub'>2026년 노임단가 · 2025 개정 가이드 기준</div>";card.appendChild(logo);var row=mk("div",{"class":"at-row"});var bl=mk("button",{"class":"at-btn"+(dt==="login"?" on":""),"id":"at-login"},"로그인");bl.onclick=function(){window._authTab("login");};var bs=mk("button",{"class":"at-btn"+(dt==="signup"?" on":""),"id":"at-signup"},"회원가입");bs.onclick=function(){window._authTab("signup");};row.appendChild(bl);row.appendChild(bs);card.appendChild(row);var fl=mk("div",{"id":"af-login","style":"display:"+(dt==="login"?"block":"none")});fl.innerHTML="<div class='login-field'><label>아이디</label><input id='inp-uid' type='text' class='login-input' placeholder='아이디 입력' autocomplete='username'></div><div class='login-field'><label>비밀번호</label><input id='inp-pw' type='password' class='login-input' placeholder='비밀번호 입력' autocomplete='current-password'></div><div id='login-err' class='login-error'></div>";var lb=mk("button",{"class":"login-btn"},"로그인");lb.onclick=function(){if(typeof doLogin==="function")doLogin();};fl.appendChild(lb);card.appendChild(fl);var fs=mk("div",{"id":"af-signup","style":"display:"+(dt==="signup"?"block":"none")});fs.innerHTML="<div class='login-field'><label>아이디</label><input id='su-id' type='text' class='login-input' placeholder='영문 숫자 4~20자' oninput='window._chkId()'><div id='su-id-msg' style='font-size:11px;margin-top:4px;min-height:16px'></div></div><div class='login-field'><label>이름</label><input id='su-nm' type='text' class='login-input' placeholder='실명'></div><div class='login-field'><label>이메일</label><input id='su-em' type='email' class='login-input' placeholder='example@dstrict.com'></div><div class='login-field'><label>비밀번호</label><input id='su-pw' type='password' class='login-input' placeholder='8자 이상' oninput='window._chkPw()'><div id='su-pw-msg' style='font-size:11px;margin-top:4px;min-height:16px'></div></div><div class='login-field'><label>비밀번호 확인</label><input id='su-pw2' type='password' class='login-input' placeholder='재입력'></div><div id='signup-err' class='login-error'></div>";var sb=mk("button",{"class":"login-btn","style":"background:var(--teal,#0F6E56)"},"가입 신청");sb.onclick=window._doSignup;fs.appendChild(sb);var nt=mk("div",{"style":"margin-top:10px;padding:10px 12px;background:var(--amber-bg);border-radius:7px;font-size:11px;color:var(--amber)"},"가입 신청 후 관리자 승인이 완료되어야 로그인 가능합니다.");fs.appendChild(nt);card.appendChild(fs);};
 window.authLogout=function(){if(!confirm("로그아웃?"))return;window._clrSess();CURRENT_USER=null;IS_READONLY=false;document.body.classList.remove("readonly");document.getElementById("app").classList.remove("active");document.getElementById("screen-login").classList.add("active");window._renderAuthUI();};
 function _authAfterLogin(){_updateTB();_updateAdminNav();_updatePB();}
 function _updateTB(){var old=document.getElementById("auth-tb");if(old)old.remove();var sep=document.querySelector("#topbar .tb-sep");if(!sep||!CURRENT_USER)return;var a=document.createElement("div");a.id="auth-tb";a.style.cssText="display:flex;align-items:center;gap:8px;margin-left:6px;flex-shrink:0";a.innerHTML="<span style=\"font-size:11px;color:rgba(255,255,255,.5)\">" +CURRENT_USER.name+(CURRENT_USER.role==="admin"?" <span style=\"color:rgba(255,255,255,.28)\">(관리자)</span>":"")+"</span><button onclick=\"authLogout()\" class=\"tb-btn\" style=\"font-size:10px;padding:4px 10px\">로그아웃</button>";sep.parentNode.insertBefore(a,sep.nextSibling);}
