@@ -4704,8 +4704,8 @@ function renderCompareUI(el, projects){
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:8px">
         ${projects.map(p=>`
-          <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1.5px solid ${COMPARE_SELECTED.includes(p.id)?'var(--purple)':'var(--border)'};background:${COMPARE_SELECTED.includes(p.id)?'var(--purple-bg)':'var(--bg)'};cursor:pointer;transition:all .15s;font-size:12px;font-weight:${COMPARE_SELECTED.includes(p.id)?700:400};color:${COMPARE_SELECTED.includes(p.id)?'var(--purple)':'var(--muted)'}">
-            <input type="checkbox" ${COMPARE_SELECTED.includes(p.id)?'checked':''} onchange="toggleCompareProject(${p.id})" style="display:none">
+          <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1.5px solid ${COMPARE_SELECTED.includes(p.id)?'var(--purple)':'var(--border)'};background:${COMPARE_SELECTED.includes(p.id)?'var(--purple-bg)':'var(--bg)'};cursor:pointer;transition:all .15s;font-size:12px;font-weight:${COMPARE_SELECTED.includes(p.id)?700:400};color:${COMPARE_SELECTED.includes(p.id)?'var(--purple)':'var(--muted)'}" onclick="toggleCompareProject(${p.id})">
+            <input type="checkbox" ${COMPARE_SELECTED.includes(p.id)?'checked':''} style="display:none">
             <span style="width:7px;height:7px;border-radius:50%;background:${mgC(p)};flex-shrink:0;display:inline-block"></span>
             ${p.name}
             <span style="font-size:10px;color:var(--hint);font-weight:400">${p.result.mg.toFixed(1)}%</span>
