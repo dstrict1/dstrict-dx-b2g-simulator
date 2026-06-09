@@ -1783,7 +1783,7 @@ const UI={pOpen:false,tab:'dashboard',detId:null,_uid:400,acOpen:{order:true,lab
 window._h=function(p){var n=5381;for(var i=0;i<p.length;i++)n=(n*33)^p.charCodeAt(i);return(n>>>0).toString(16).padStart(8,"0");};
 window._getUsers=function(){try{return JSON.parse(localStorage.getItem("b2g_auth_v1")||"[]");}catch(e){return[];}};
 window._saveUsers=function(a){localStorage.setItem("b2g_auth_v1",JSON.stringify(a));};
-window._initAdmin=function(){if(!window._getUsers().find(function(u){return u.id==="admin";})){window._saveUsers([{id:"admin",pw:window._h("dstrict2026!"),name:"관리자",role:"admin",status:"active",createdAt:new Date().toISOString(),approvedAt:new Date().toISOString()}]);}};
+window._initAdmin=function(){if(!window._getUsers().find(function(u){return u.id==="admin";})){window._saveUsers([{id:"dstrict",pw:"05accc0e",name:"관리자",role:"admin",status:"active",createdAt:new Date().toISOString(),approvedAt:new Date().toISOString()}]);}};
 window._getSess=function(){try{return JSON.parse(sessionStorage.getItem("b2g_sess_v1")||"null");}catch(e){return null;}};
 window._setSess=function(u){sessionStorage.setItem("b2g_sess_v1",JSON.stringify({id:u.id,name:u.name,role:u.role,at:Date.now()}));};
 window._clrSess=function(){sessionStorage.removeItem("b2g_sess_v1");};
